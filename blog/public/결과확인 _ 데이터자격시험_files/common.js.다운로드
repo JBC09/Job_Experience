@@ -1,0 +1,2461 @@
+/**
+ * IOSYS Prototype & Function
+ * @author leedan, www.iosys.co.kr
+ * @since 2010.06.09
+ * @update 2010.07.23
+ * @version 1.1.0 alpha
+ */ 
+ 
+//---------------------------------------------
+// Prototype
+//---------------------------------------------
+String.prototype.trim		= function(){ return this.replace(/(^\s*)|(\s*$)/g,""); };
+String.prototype.ltrim		= function(){ return this.replace(/^\s+/g,""); };
+String.prototype.rtrim		= function(){ return this.replace(/\s+$/g,""); };
+String.prototype.br2nl		= function(){ return this.replace(/<br\s*\/?>/mg,"\n"); };
+String.prototype.nl2br		= function(){ return this.replace(/\n/mg,"<br \\>"); };
+String.prototype.nbsp2s		= function(){ return this.replace(/ ?/mg," "); };
+String.prototype.toObject	= function(){ return String2Object(this); }; // 2010.07.23
+Array.prototype.copy 		= function(){ return [].concat(this); };
+Array.prototype.sortNum		= function(){ return this.sort(function(a,b){return a-b;}); };
+Array.prototype.shuffle		= function(){ return this.sort(function(){return 0.5 - Math.random()}); };
+Array.prototype.unique		= function(){ var self = this;var resultArr = [];var map = {};for(var i=0;i<self.length;i++){if(self[i] instanceof Object){var key = JSON.stringify(self[i]);} else {var key = self[i];}if(map[key] == undefined){resultArr.push(self[i]);map[key] = "1";}}return resultArr;};
+Array.prototype.remove		= function(from, to) {var rest = this.slice((to || from) + 1 || this.length);this.length = from < 0 ? this.length + from : from;return this.push.apply(this, rest);};
+Date.prototype.format 		= function(){ return Date2Format(this, arguments[0]); }; // 2010.07.23
+Date.prototype.add			= function(){ return DateAdd(arguments[0],arguments[1],this); }; // 2010.07.23
+
+/**
+ * console.log 사용
+ */
+if(window.console == undefined) { window.console = { log : function(){}, debug : function(){}, error : function(){} }; }
+if(window.console.log == undefined){ window.console.log = function(){}; }
+if(window.console.debug == undefined){ window.console.debug = window.console.log; }
+if(window.console.error == undefined){ window.console.error = window.console.log; }
+if (typeof Object.assign !== 'function') {
+  // Must be writable: true, enumerable: false, configurable: true
+  Object.defineProperty(Object, "assign", {
+    value: function assign(target, varArgs) { // .length of function is 2
+      'use strict';
+      if (target === null || target === undefined) {
+        throw new TypeError('Cannot convert undefined or null to object');
+      }
+
+      var to = Object(target);
+
+      for (var index = 1; index < arguments.length; index++) {
+        var nextSource = arguments[index];
+
+        if (nextSource !== null && nextSource !== undefined) { 
+          for (var nextKey in nextSource) {
+            // Avoid bugs when hasOwnProperty is shadowed
+            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+              to[nextKey] = nextSource[nextKey];
+            }
+          }
+        }
+      }
+      return to;
+    },
+    writable: true,
+    configurable: true
+  });
+}
+Math.log10 = Math.log10 || function(x) {
+  return Math.log(x) * Math.LOG10E;
+};
+
+/*
+*   백스페이스키 막기.
+*   param  : 
+*   author : kfsura@iosys.co.kr
+*   since  : 2012.05.24
+*   Desc : 포커스가 select, text readonly 속성의 input에 있을 경우 백스페이스 불가
+*/
+document.onkeydown = function () {
+	try {
+		var backspace = 8;
+		var t = document.activeElement;
+		if (event.keyCode == backspace) {
+			if (t.tagName == "SELECT") {
+				return false;
+			}
+			if ((t.tagName == "INPUT" || t.tagName == "TEXTAREA") && $(t).attr("readonly") == "readonly"){
+				return false;
+			}
+			return true;
+		}
+	} catch (e) { }
+};
+
+/**
+ * 아스키문자열
+ * <code> var c4 = char(4); </code>
+ * @author leedan
+ */
+function char(charcode){
+	return String.fromCharCode(charcode);
+}
+
+/**
+ * JSON형태의 문자열을 Object로 리턴
+ * <code> var obj = String2Object("{ a: 1, b: 2 }"); alert(obj.a); </code>
+ * @author leedan
+ */
+function String2Object(str){
+	if(str != "" && str != undefined){
+	str = str.replace(/(^\s*)|(\s*$)/g,"");
+	var chk = str.substring(0,1); 
+	if(chk!="{" && chk!="[") 
+		str = "{" + str + "}"; 
+	return eval("ReturnString2Object=" + str);
+	} else {
+		return null;
+	}
+}
+
+
+/**
+ * 날짜를 문자열포멧으로 리턴
+ * <code> var today = Date2Format(new Date(), "yyyy-MM-dd HH:mm:ss.SSS"); </code>
+ * @author leedan
+ * @since 2007.10.03
+ * @update 2010.07.23
+ */
+function Date2Format(datetime, format){
+	var _WithString = function(istr, len){
+		istr = istr.toString();
+		return "00000".substring(0, (len||2)-istr.length) + istr;
+	};
+	const WEEKDAY = ['일', '월', '화', '수', '목', '금', '토'];
+	format = format.match(/yyyy/)?format.replace(/yyyy/g, datetime.getFullYear()):format;
+	format = format.match(/MM/)?format.replace(/MM/g, _WithString(datetime.getMonth()+1)):format;
+	format = format.match(/dd/)?format.replace(/dd/g, _WithString(datetime.getDate())):format;
+	format = format.match(/HH|hh/)?format.replace(/HH/gi, _WithString(datetime.getHours())):format;
+	format = format.match(/mm/)?format.replace(/mm/g, _WithString(datetime.getMinutes())):format;
+	format = format.match(/ss/)?format.replace(/ss/g, _WithString(datetime.getSeconds())):format;
+	format = format.match(/SSS/)?format.replace(/SSS/g, _WithString(datetime.getMilliseconds(),3)):format;
+	format = format.match(/D/)?format.replace(/D/g, WEEKDAY[datetime.getDay()]):format;
+	return format;
+}
+
+/**
+ * 날짜의 연산
+ * <code> var tomorrow = DateAdd("m", 1, new Date()); </code>
+ * @author leedan
+ * @since 2007.10.03
+ * @update 2010.07.23
+ */
+function DateAdd(itemtype, addvalue, date){
+	switch (itemtype){
+		//date portion		 
+		case 'd': //add days
+			date.setDate(date.getDate() + addvalue);
+			break;
+		case 'm': //add months
+			date.setMonth(date.getMonth() + addvalue);
+			break;
+		case 'y': //add years
+			date.setYear(date.getFullYear() + addvalue);
+			break;
+		//time portion		 
+		case 'h': //add days
+			date.setHours(date.getHours() + addvalue);
+			break;
+		case 'n': //add minutes
+			date.setMinutes(date.getMinutes() + addvalue);
+			break;
+		case 's': //add seconds
+			date.setSeconds(date.getSeconds() + addvalue);
+			break;
+	}
+	return date;
+}
+
+/*
+ * webUtil 
+*/
+var IosWebUtil = function() {
+	this.log_yn = true;//false; //true;	//console.log 사용값
+	this.contextPath = ""; //웹 루트경로.
+	this.messageList = [];
+	this.messageRemove = true;
+	this.messageShowTime = 3000;
+};
+var webUtil = new IosWebUtil();
+
+IosWebUtil.prototype.getContextPath = function(){
+    var scriptList = document.getElementsByTagName("script");
+    var port = window.location.port;
+    var host = window.location.host.replace(":"+port, "");
+    var path = "";
+    var fileName = "";
+    try{
+    	for(var i=0; i<scriptList.length;i++){
+    		var tmFileName = scriptList[i].src;
+    		if(tmFileName.indexof(host) > -1){
+    			fileName = tmFileName;
+    			break;
+    		}
+    	}
+    	if(fileName != ""){
+    		path = fileName.split("/js/")[0];
+    	}
+    } catch (e) {}
+	return path;
+};
+webUtil.contextPath = webUtil.getContextPath();
+var navi_main = 0;
+var navi_sub = 0;
+var sub_main ;
+var site_menu;
+
+function widthResize(){
+	  var width = $(window).width();
+	  if(width < 1051){
+			 $(".page_header ul.navi i.xi-home-o").html('<a href="/www/main.do"><span class="blind">홈으로 바로가기</span></a>')
+		  } else {
+			 $(".page_header ul.navi i.xi-home-o").html("")		  
+		  }
+}
+
+$(window).resize(function() {
+	widthResize()
+});
+
+$(document).ready(function(){
+	$(".page_header ul.navi i.xi-home-o").attr("tabindex","-1")			
+	if (isMobile()) {
+		jQuery("body").addClass("mobile");
+	} else {
+		jQuery("body").addClass("pc");
+	}
+	widthResize()
+
+	if(window.contextRoot != undefined){
+		webUtil.contextPath = window.contextRoot;
+		//return;
+	}
+	if( site_menu != undefined && site_menu instanceof Array )
+	{
+		siteMap("#navbar");
+		siteMap(".global_menu_in");
+		siteMap("#aside");
+	}
+	
+	if($("body").hasClass("home")){
+		// 메인 일때만 alert("main")
+
+		$(".global_menu_in li.menu_sub_1").addClass("actived");
+		$(".global_menu_in li.menu_sub_1 .submenu").addClass("actived");
+
+	} else {
+		if(site_menu && navi_main > 0){
+			if( navi_sub > 0 )
+			{
+			//	alert("서브" + navi_main + "/" +navi_sub)
+				var titleName = site_menu[navi_main][4][navi_sub-1][0];
+				
+				$(".page_header h2").html(titleName);
+				
+				// 현재 URL 가져오기
+				var currentUrl = window.location.href;
+
+				// URL에서 파일명 추출
+				var fileName = currentUrl.substring(currentUrl.lastIndexOf('/') + 1);
+
+				
+				// URL에서 파일명 추출
+				
+				var fullfileName = (window.location.href).split("www")[1];
+
+				
+				
+				// 파일명 출력
+				console.log(fileName);
+				
+				 switch (fileName) {
+		            case "a_06.do": case "a_02.do":  
+	            		titleName = titleName + "[준전문가]";
+		                break;
+		            case "a_01.do": case "a_05.do":  
+	            		titleName = titleName + "[전문가]";
+		                     break;
+		            case "list.do":
+		            	if(fullfileName == "/accept/list.do")
+		            		{
+		            		titleName = titleName + "";
+		            		}
+		            	else {
+		            		titleName = titleName + "[목록]";
+		            	}
+		                     break;
+		            case "add.do":
+		            		titleName = titleName + "[글쓰기]";
+		                     break;
+		            case "view.do":  
+		            	titleName = titleName + "[글보기]";
+		                     break;
+		            case "edit.do":  
+		            	titleName = titleName + "[수정하기]";
+		                     break;
+		            default: 
+		            	break;
+				 }
+				
+				// 타이틀 추가 
+				
+				$("head title").prepend(titleName + " : ")
+				
+				
+				$(".page_header ul.navi").append("<li><i aria-hidden='true' class='xi-angle-right-min'></i>"+site_menu[navi_main][0]+"</li>");
+				$(".gnb li.menu_sub_" + navi_main).addClass("selected");
+				$(".global_menu_in li.menu_sub_" + navi_main).addClass("actived");
+				$(".global_menu_in li.menu_sub_" + navi_main + " .submenu").addClass("actived");
+			
+				$(".global_menu_in li.menu_sub_" + navi_main + " ul.submenu li.sub:nth-child("+ navi_sub +")").addClass("actived");
+				
+				$(".gnb li.menu_sub_" + navi_main + " ul.submenu li.sub:nth-child("+ navi_sub +")").addClass("selected");
+				if(((navi_main == 7)&&(navi_sub == 1))||(navi_main == 6)){
+					$(".body_grid").addClass("none_grid");
+					$(".lnb").html("");
+				} else {
+	 				siteMap("#aside");
+					$(".lnb li.menu_item:nth-child("+navi_main+")").show();
+					$(".lnb li.menu_item:nth-child("+navi_main+") ul.submenu li.sub:nth-child("+ navi_sub +") a").addClass("selected");
+					$(".lnb li.menu_item:nth-child("+navi_main+") ul.submenu li.sub:nth-child("+ navi_sub +") a").append('<i aria-hidden="true" class="xi-angle-right-min"></i>');	
+
+					$(".page_header ul.navi").append("<li><i aria-hidden='true' class='xi-angle-right-min'></i>"+site_menu[navi_main][4][navi_sub-1][0]+"</li>");
+					
+				}
+			}
+			else
+			{
+				siteMap("#aside");
+				$(".lnb li.menu_item:nth-child("+navi_main+")").show();
+			}
+			
+		} else {
+			navi_main = 0; 
+			navi_sub = 0
+		}
+	}
+	
+	
+	
+	$(".loading_box").delay(100).fadeOut("slow");
+	
+	$("#navbar").mouseover(function(){
+		$(this).addClass("mouse");
+		
+		$("#navbar .submenu").removeClass("menu_foucs")
+		$("body").addClass("bg");
+		if($("body").hasClass("home")){
+			$("body").removeClass("main");
+		}
+	});
+	
+	
+	$("body").mousemove(function(){
+		$('#navbar  ul.submenu').removeClass("menu_foucs")
+
+	});
+
+	
+	$("#gnb .site_map").focus(function(){
+		$('#navbar  ul.submenu').removeClass("menu_foucs")
+	});
+	
+	$("#navbar .main_menu").focus(function() {
+		if($("body").hasClass("bg")) {}
+		else {
+		$('#navbar  ul.submenu').removeClass("menu_foucs")
+
+		$(this).closest('li').find('ul.submenu').addClass("menu_foucs");}
+	});
+	
+		
+	$(".global_menu_in .main_menu").focus(function() {
+		
+		var nowWidth = Number(($("body").css("width")).replace("px",""))
+			if( nowWidth < 1050 ){
+				$(".global_menu_in .main_menu").removeClass("actived");
+				$(this).addClass("actived");
+				$('.global_menu_in  ul.submenu').removeClass("actived");
+				$(this).closest('li').find('ul.submenu').addClass("actived");
+			}
+	
+});
+
+	
+	
+	$("#navbar").mouseleave(function(){
+		$(this).removeClass("mouse");
+		$("body").removeClass("bg");
+		
+		if($("body").hasClass("main_head_trans")){
+			return;
+		}
+		if($("body").hasClass("home")){
+			$("body").addClass("main");
+		}
+	});
+	$(".go_main").click(function(){
+		location.href= "/www/main.do"
+	});
+	
+	$(".global_menu nav:after").click(function(){
+		$(".global_menu").fadeOut("fast")
+	});
+	
+    $("body").scrollTop(0)
+
+    var didScroll; // 스크롤시에 사용자가 스크롤했다는 것을 알림
+
+    $(window).scroll(function(event) {
+        didScroll = true;
+    }); // hasScrolled()를 실행하고 didScroll 상태를 재설정
+
+    setInterval(function() {
+        if (didScroll) {
+            hasScrolled();
+            didScroll = false;
+        }
+    }, 250);
+	
+    cookiedata = document.cookie;
+	if ( cookiedata.indexOf("topPop=done") < 0 ){
+		$(".header_banner").addClass("active");
+		$("#gnb").addClass("head_banner");
+		$("#content").addClass("head_banner");
+		$(".global_menu").addClass("head_banner");
+		}
+	else {
+		$(".header_banner").removeClass("active")
+		$("#gnb").removeClass("head_banner");
+		$("#content").removeClass("head_banner");
+		$(".global_menu").removeClass("head_banner");
+	}
+	
+	/*
+    $(".tab_ui .tab_item").on("click", function() {
+    	
+        var tabid = $(this).attr("tabid");
+        //alert(tabid)
+        $(".tab_ui .tab_item[tabid=" + tabid + "]").removeClass("seleted")
+        $(".tab_contents[tabid=" + tabid + "] .tab_item").removeClass("seleted")
+
+        $(this).addClass("seleted");
+        var id = $(this).attr('tab');
+        $(".tab_contents[tabid=" + tabid + "] .tab_content").removeClass("seleted");
+        $(".tab_contents[tabid=" + tabid + "] .tab_content[tab=" + id + "]").addClass("seleted");
+        
+    })
+
+    $(document).on("click", ".nav-link[data-toggle='tab']", function () {
+    	var txt = $(this).html()
+    	$(".page_header ul li:last-child").html('<i aria-hidden="true" class="xi-angle-right-min"></i>'+txt)
+    });
+*/
+    $(".global_menu_in .menu_item ").on("click", function() {
+    	$(".global_menu_in .menu_item").removeClass("actived")
+    	$(".global_menu_in .menu_item .submenu").removeClass("actived")
+    	$(this).addClass("actived");
+    	$(this).find(".submenu").addClass("actived");
+    })
+    
+   tabWeb()
+    
+ // 시각적으로 활성화 표기를 위한 클래스 추가
+
+    
+    
+});
+
+	 // 탭 웹접근성
+function tabWeb(){
+	 // 탭 웹접근성
+	
+	
+    if($(".nav.nav-tabs.nav-fill").html()){
+    	
+    	$(".nav-tabs a.nav-link:first-of-type, .tab-content .tabpanel:first-of-type").addClass("active");
+    	var h3title = $(".nav-tabs a.nav-link:first-of-type").html();
+    	$(".nav-tabs a.nav-link:first-of-type").append("<span class='blind'>선택됨</span>");
+    	$(".nav-tabs a.nav-link:first-of-type, .tabpanel:first-of-type").addClass("active");
+    	    
+    	$(".nav-tabs a.nav-link:first-of-type").addClass("active");
+    	$(".tab-pane:first-of-type").addClass("active")
+    	    
+    	$(".nav-tabs a.nav-link").on("keydown", function(event){
+    	 event = event || window.event;
+    	 event.preventDefault ? event.preventDefault() : event.returnValue = false;
+    	 var keycode = event.keyCode || event.which;
+
+    	 if(!event.shiftKey && keycode === 9){
+    		 
+			 //event.preventDefault ? event.preventDefault() : event.returnValue = false;
+			 // alert($(this).attr("aria-controls"))
+     	     //  $("#"+$(this).attr("aria-controls")).attr({"tabindex": "0"}).focus();
+			// if (event.keyCode === 9) { // Tab 키의 keyCode는 9입니다.
+				    var focusableElements = $(":focusable:not([tabindex='-1'])");
+				    console.log(focusableElements)
+				    var currentIndex = focusableElements.index(document.activeElement);
+				    var nextIndex = (currentIndex + 1) % focusableElements.length;
+				    focusableElements.eq(nextIndex).focus();
+				    event.preventDefault(); // 기본 Tab 이동 동작을 방지합니다.
+				//  }			
+			   
+		 } else if(event.shiftKey && keycode === 9){
+			  //$("#aside a").focus()
+			 
+			 	event.preventDefault(); // 기본 동작인 이전 요소로의 초점 이동을 막음
+
+			    // 현재 초점이 있는 요소를 가져옴
+			    var focusedElement = document.activeElement;
+			    console.log("focusedElement")
+			    console.log(focusedElement)
+			    // 이전 탭 가능한 요소를 찾아서 초점을 이동시킴
+			    var previousTabbableElement = findPreviousTabbableElement(focusedElement);
+			    console.log("previousTabbableElement")
+			    console.log(focusedElement)
+			    if (previousTabbableElement) {
+			      previousTabbableElement.focus();
+			    }			 
+			 
+		 } else {
+    	 
+    	 switch(keycode){
+    	   case 37:  // left arrow
+    	     if(this.previousElementSibling){
+    	       $(this).prev().focus();
+    	     }else{
+    	       // 초점이 첫 번째 요소에 있었다면, 마지막 탭으로 초점 이동
+//    	       $(this).attr("tabindex", "-1");
+    	       $("a.nav-link:last-of-type").focus();
+    	     }
+    	     break;
+    	   case 39:  // right arrow
+    	     if(this.nextElementSibling){
+    	       $(this).next().focus();
+    	     }else{
+    	       // 초점이 마지막 요소에 있었다면, 첫 번째 탭으로 초점 이동
+    	       //$(this).attr("tabindex", "-1");
+    	       $("a.nav-link:first-of-type").focus();
+    	     }
+    	     break;
+	    	case 32:    // Space
+	    	case 13:    // Enter
+	    	     // 선택된 탭 활성화
+		    	 $(this).find(".blind").remove();
+		    	 $(this).siblings().find(".blind").remove();
+
+		    	 $(this).addClass("active");
+	    	     // 선택됨 추가
+	    	     $(this).append("<span class='blind'>선택됨</span>")
+	    	     // 기존 탭 비활성화
+	    	     .siblings().removeClass("active").removeClass("show").remove("span.blind");
+	    	     // 연관된 탭 패널 활성화
+	    	     var thisId = ($(this).attr("content")).substr(1) 
+	    	     $("#" + thisId).addClass("active").addClass("show")
+	    	     // 기존 탭 패널 비활성화
+	    	     .siblings(".tab-pane").removeClass("active").removeClass("show");
+    	    	 $(".page_header ul li:last-child").html('<i aria-hidden="true" class="xi-angle-right-min"></i>'+$(this).html())
+	    	     break;
+	    	 }    	 
+		 	}
+    	});
+    	    
+    	$(".nav.nav-tabs.nav-fill").on("keydown", ".active", function(event){
+    	 event = event || window.event;
+    	 var keycode = event.keyCode || event.which;
+    	 // tab 키 눌렀을 때 (shift + tab은 제외)
+    	 
+    	 if(!event.shiftKey && keycode === 9){
+    		
+    	 //  event.preventDefault ? event.preventDefault() : event.returnValue = false;
+    	 //  var thisId = ($(this).attr("content")).substr(1) 
+    	 //  $("#" + thisId).addClass("active").addClass("active").addClass("show")
+    	 //  .siblings(".tab-pane").removeClass("active").removeClass("show");
+    	   //setTimeout( function(){ $("#" + $(this).attr("aria-controls")).focus() }, 1 );
+    	   //window.scrollTo(0, 0);
+    	   
+    	 }	
+    	});
+    	    
+	    $(".nav-tabs a.nav-link").on("mousedown", function(){
+	    	 // 선택된 탭 활성화
+	    	 $(this).find(".blind").remove();
+	    	 $(this).siblings().find(".blind").remove();
+	    	 $(this).addClass("active").focus().append("<span class='blind'>선택됨</span>")
+	    	 // 기존 탭 비활성화
+	    	 .siblings().removeClass("active");
+    	     var thisId = ($(this).attr("content")).substr(1) 
+    	     $("#" + thisId).addClass("active").addClass("active").addClass("show")
+    	     // 기존 탭 패널 비활성화
+    	     .siblings(".tab-pane").removeClass("active").removeClass("show");
+	    	 $(".page_header ul li:last-child").html('<i aria-hidden="true" class="xi-angle-right-min"></i>'+$(this).html())
+	    	});
+    	/*    
+    		$(".tab-content .tab-pane").keydown(function (e) {
+    			//입력키가 엔터 또는 Tab 키 일시
+    				 alert(e.keyCode)
+    		    if (e.keyCode == 9) {
+    		    	$(this).attr("tabindex", "-1")
+    		    	
+    		    	if(!($(this).hasClass("in_btn_pane")))
+    		    		if($(this).next().attr("aria-labelledby")){
+	    	    	      $(this).removeClass("active").removeClass("show")
+	    	    	      $(".tab-pane[aria-labelledby="+$(this).next().attr("aria-labelledby")+"]").addClass("active").addClass("show")
+	    	    	      $("#"+$(this).attr("aria-labelledby")).removeClass("active").attr({"tabindex": "-1","aria-selected": "false"});
+	    	 	    	  $("#"+$(this).next().attr("aria-labelledby")).attr({"tabindex": "-1","aria-selected": "ture"}).addClass("active").addClass("show")
+	    	 	    	  .siblings(".tab-pane").attr("tabindex", "-1").removeClass("active").removeClass("show");
+	    	 	    	  //$("#" + $(this).attr("aria-labelledby")).focus()
+     	    	    	 $(".page_header ul li:last-child").html('<i aria-hidden="true" class="xi-angle-right-min"></i>'+$("#" + $(this).attr("aria-labelledby")).next().html())
+    		    	} 
+    		    	
+    			} else   if(e.keyCode == "9" && e.shiftKey) {
+    				  $(".nav-tabs .active").focus()
+    			}
+    			
+    		  });
+    		
+    	    
+    		
+    		$(".tab-content .tab-pane .tab_last_btn").keydown(function (e) {
+    		    if (e.keyCode == 9) {
+    	    	      $(this).closest(".tab-pane").removeClass("active").removeClass("show")
+    	    	      $(".tab-pane[aria-labelledby="+$(this).closest(".tab-pane").next().attr("aria-labelledby")+"]").addClass("active").addClass("show")
+    	    	      $("#"+$(this).closest(".tab-pane").attr("aria-labelledby")).removeClass("active").attr({"tabindex": "-1","aria-selected": "false"});
+    	 	    	  $("#"+$(this).closest(".tab-pane").next().attr("aria-labelledby")).attr({"tabindex": "0","aria-selected": "ture"}).addClass("active").addClass("show").focus()
+    	 	    	  .siblings(".tab-pane").attr("tabindex", "-1").removeClass("active").removeClass("show");
+    	 	    	  $("#" + $(this).closest(".tab-pane").attr("aria-labelledby")).focus()
+ 	    	    	 $(".page_header ul li:last-child").html('<i aria-hidden="true" class="xi-angle-right-min"></i>'+$("#" + $(this).attr("aria-labelledby")).next().html())
+    		    	
+    		    }
+      		  });
+      		  */
+    		
+    		
+    }
+}
+// -- 이전 가능 탭 요소 찾
+
+
+function findPreviousTabbableElement(startElement) {
+  var tabbableElements = $(":focusable:not([tabindex='-1'])"); // 탭 가능한 요소들을 선택
+  var startIndex = tabbableElements.index(startElement);
+
+  // 이전 탭 가능한 요소를 찾음 (tabindex 값이 -1인 요소는 제외)
+  for (var i = startIndex - 1; i >= 0; i--) {
+  //  if (tabbableElements.eq(i).attr('tabindex') >= 0) {
+      return tabbableElements.eq(i);
+   // }
+  }
+
+  return null; // 이전 탭 가능한 요소가 없을 경우 null 반환
+}
+//------------------------------------------------------------
+//스크롤시 헤더에 클래스를 추가
+
+//------------------------------------------------------------
+
+function hasScrolled() { // 스크롤시 헤더에 클래스를 추가
+	var scrollThis = $("html").scrollTop()
+
+    
+    if (scrollThis > 0) {
+        $("body").addClass("main_head_trans");
+        if($("body").hasClass("home")){
+			$("body").removeClass("main");
+		}
+    } else {
+        $("body").removeClass("main_head_trans");
+		if($("body").hasClass("home")){
+			$("body").addClass("main");
+		}
+        
+    }
+    /*
+      if (scrollThis > 165) {
+        //  alert("100")
+        $(".lnb .nav").addClass("nav_sticky");
+      } else {
+        $(".lnb .nav").removeClass("nav_sticky");
+      }
+
+      if (scrollThis > 395) {
+        //  alert("100")
+        $(".tab_area").addClass("tab_area_sticky");
+        $(".tab_content").css("padding-top", "86px");
+      } else {
+        $(".tab_area").removeClass("tab_area_sticky");
+        $(".tab_content").css("padding-top", "0");
+      }
+      */
+}
+
+
+//------------------------------------------------------------
+// console log
+//------------------------------------------------------------
+IosWebUtil.prototype.log = function(){
+	if(this.log_yn){
+		var args = arguments;
+		var msg = "";
+		if(args == undefined ){
+			msg += " : undefined";
+		} else if(args == null){
+			msg += " : null";
+		} else {
+			$.each(args, function(index, element){
+					if(element == undefined){
+						msg += " (undefined): undefined";
+					} else if(element == null){
+						msg += " (null): null";
+					}else{
+						if(typeof(element) == "object" || typeof(element) == "function"){
+							msg += " ("+typeof(this)+"): " + toJSON(this);
+						} else {
+							msg += " : " + this;
+						}
+					}
+				});
+		}
+		console.log("[WebLog]" + msg);
+		msg = "";
+	}
+};
+
+IosWebUtil.prototype.CallServer = function(url, param){
+	var result = "";
+	$.ajax({ url: url, type: (param ? "POST" : "GET"), data: param, dataType: "html", cache: false, async: false, success: function (data) { result = data.replace(/(^\s*)|(\s*$)/g, "");} });
+	return result;
+};
+
+
+/** 메시지
+ */
+IosWebUtil.prototype.pushMeg = function(message){
+	if(this.messageList != undefined){
+		this.messageList.push({"message" : message, time : new Date()});
+	} else {
+		this.messageList = [{"message" : message, time : new Date()}];
+	}
+	window.setTimeout(webUtil.checkMessage, ( webUtil.messageShowTime + 100 ));
+	webUtil.checkMessage();
+};
+IosWebUtil.prototype.setMessageRemove = function(){
+	webUtil.messageRemove = !webUtil.messageRemove;
+	webUtil.checkMessage();
+};
+IosWebUtil.prototype.checkMessage = function(){
+	if(webUtil.messageList != undefined && webUtil.messageList instanceof Array && webUtil.messageList.length > 0){
+		if(webUtil.messageRemove){
+			var nowDate = new Date();
+			for(var i=webUtil.messageList.length-1;i>=0; i--){
+				var t = webUtil.messageList[i];
+				if((nowDate - t.time) >= webUtil.messageShowTime){
+					webUtil.arrayRemove(webUtil.messageList, i);
+				}
+				console.debug("messageList--", webUtil.messageList);
+			}
+		} else {
+			console.debug("messageList not remove ", webUtil.messageList);
+		}
+		webUtil.showMessage();
+	}
+};
+IosWebUtil.prototype.showMessage = function(){
+	var meessageArea = $("#__meessageArea");
+	// 기존 메시지 영역확인
+	if(meessageArea.length == 0){
+		var lyMeessageArea  = document.createElement("div");
+		lyMeessageArea.id = "__meessageArea";
+		document.body.appendChild(lyMeessageArea);
+		meessageArea = $("#__meessageArea");
+		// 메시지 영역에 이벤트 추가(메시지 멈춤, 진행)
+		meessageArea.click(webUtil.setMessageRemove);
+		meessageArea.addClass("messageList");
+	}
+	// 메시지를 html로 변환
+	var htmlStr = "<ul>\r\n";
+	for(var i=0;i<webUtil.messageList.length;i++){
+		htmlStr = htmlStr + "<li>" + webUtil.Date2Format(this.messageList[i].time, "yyyy-MM-dd HH:mm:ss.SSS") +  " : " + webUtil.messageList[i].message + "</li>\r\n";
+	}
+	// html출력
+	htmlStr = htmlStr + "<ul>";
+	meessageArea.html(htmlStr);
+};
+
+//------------------------------------------------------------
+//로딩화면 open  
+//------------------------------------------------------------
+IosWebUtil.prototype.fnLoadingLayerView = function (zindex){
+	var context = webUtil.contextPath;
+	var lyloadingbg = document.createElement("div");
+	zindex = zindex || 200;
+	$(lyloadingbg).attr("style", "position:fixed; top:0; left:0; z-index:"+zindex+"; width:100%; height:100%; background:#fff; opacity:0; filter:alpha(opacity=0);");
+	lyloadingbg.id = "_SeWindowReady_";
+	// 팝업
+	var ly_loding = document.createElement("div");
+	zindex = zindex + 20;
+	$(ly_loding).attr("style", "position:fixed; top:50%; left:50%; z-index:"+zindex+"; margin-left:-50px; margin-top:-50px;");
+	$(ly_loding).html('<img src="'+context+'/css/layout/sub/loading.gif" alt="LOADING....." />');
+	ly_loding.id = "_SeWindowLoading_";
+	document.body.appendChild(lyloadingbg);
+	document.body.appendChild(ly_loding);
+    // ESC = 팝업창 닫기
+    $(document).bind('keydown', function(e){
+    	if (e.keyCode === $.ui.keyCode.ESCAPE && $("#_SeWindowLoading_").attr("id") != undefined ) {
+    		webUtil.fnLoadingLayerClose();
+    		e.stopPropagation();
+    	}
+    });
+};
+
+//------------------------------------------------------------
+//로딩화면 close
+//------------------------------------------------------------
+IosWebUtil.prototype.fnLoadingLayerClose = function (){
+	$("div").remove("#_SeWindowReady_");
+	$("div").remove("#_SeWindowLoading_");
+};
+
+/*
+*   레이어 팝업(CallServer사용)
+*   param  : 
+*   author : kfsura@iosys.co.kr
+*   since  : 2012.05.24
+*   update : 2012.05.24
+*/
+IosWebUtil.prototype.fnLyload = function (url, params, callBack, option) {
+	var num, ly_w, ly_h;
+	if(option != undefined){
+		num = option.num || "";
+		ly_w = option.ly_w || "";
+		ly_h = option.ly_h || "";
+	}
+	num = num || "";
+	this.fnLypop_make(num);
+
+	var tm_html = this.CallServer(url, params);
+	$("#ly_pop"+num).html(tm_html);
+	if(callBack != undefined && typeof(callBack) == "function"){
+		$("#ly_pop"+num).on("remove", function(){ try { callBack(); } catch (e) {} });
+	}
+	var h = ly_h == undefined || ly_h == "" || ly_h == "auto" ? $("#ly_pop"+num).height() : ly_h;
+	var w = ly_w == undefined || ly_w == "" || ly_w == "auto" ? $("#ly_pop"+num + " > div").width() : ly_w;
+	
+	$("#ly_pop"+num).css("left", "50%");
+	$("#ly_pop"+num).css("margin-left", w/2*(-1));	//left
+	$("#ly_pop"+num).width(w);
+	if(ly_h != ""){
+		$("#ly_pop"+num).height(h);
+	}
+
+	var t = ($(window).height() <= h ? 100 : ($(window).height() - h ) / 3) + $(document).scrollTop();
+	$("#ly_pop"+num).css("top", t);	//top
+    try{
+    	$("div[name=ly_pop], #ly_pop"+num).draggable({ handle: "h1, .handle" });
+	} catch (e) {}
+	$("#ly_pop"+num+" h1, #ly_pop"+num+" .handle").css("cursor","move");
+	$("#ly_pop"+num+" #pop_clse, #ly_pop"+num+" .pop_clse, #ly_pop"+num+" .io-pop_clse").click(function(){
+		$(this).parents("div[name=ly_pop]").slideUp(500, function(){$(this).remove();$("#__ly_pop_bg"+num).remove();});
+	});
+};
+IosWebUtil.prototype.fnLyloadHtml = function (htmlstring, callBack, option) {
+	var num, ly_w, ly_h;
+	if(option != undefined){
+		num = option.num || "";
+		ly_w = option.ly_w || "";
+		ly_h = option.ly_h || "";
+	}
+	num = num || "";
+	this.fnLypop_make(num);
+	
+	$("#ly_pop"+num).html(htmlstring);
+	if(callBack != undefined && typeof(callBack) == "function"){
+		$("#ly_pop"+num).on("remove", function(){ try { callBack(); } catch (e) {} });
+	}
+	var h = ly_h == undefined || ly_h == "" || ly_h == "auto" ? $("#ly_pop"+num).height() : ly_h;
+	var w = ly_w == undefined || ly_w == "" || ly_w == "auto" ? $("#ly_pop"+num + " > div").width() : ly_w;
+	
+	$("#ly_pop"+num).css("left", "50%");
+	$("#ly_pop"+num).css("max-width", "100%");
+	$("#ly_pop"+num).css("margin-left", w/2*(-1));	//left
+	$("#ly_pop"+num).width(w);
+
+	var t = ($(window).height() <= h ? 100 : ($(window).height() - h ) / 3) + $(document).scrollTop();
+	$("#ly_pop"+num).css("top", t);	//top
+    try{
+    	$("div[name=ly_pop], #ly_pop"+num).draggable({ handle: "h1, .handle" });
+	} catch (e) {}
+	$("#ly_pop"+num+" h1, #ly_pop"+num+" .handle").css("cursor","move");
+	$("#ly_pop"+num+" #pop_clse, #ly_pop"+num+" .pop_clse, #ly_pop"+num+" .io-pop_clse").click(function(){
+		$(this).parents("div[name=ly_pop]").slideUp(500, function(){$(this).remove();$("#__ly_pop_bg"+num).remove();});
+	});
+};
+IosWebUtil.prototype.fnLypop_make = function (num) {
+	var zindex = 0;
+	if(num == undefined || num == ""){
+		num = "";
+	} else {
+		zindex = (this.makeStringToNumString(num) * 1 + 1) * 10;
+		//zindex = 10;
+	}
+    try {
+    	$("#__ly_pop_bg"+num).remove();
+    	$("#ly_pop"+num).remove();
+    }
+    catch (e){
+    }
+    
+    // 백그라운드
+    var lypopbg = document.createElement("div");
+    lypopbg.id = "__ly_pop_bg"+num;
+    $(lypopbg).attr("style", "position:fixed; top:0; left:0; z-index:40; width:100%; height:100%; background:#000; opacity:0.7; filter:alpha(opacity=70);");
+    document.body.appendChild(lypopbg);
+    // 팝업
+    var lypop = "<div id=\"ly_pop"+num+"\" name=\"ly_pop\" class=\"__io_ly_pop\"></div>";
+    
+	$("body").append(lypop);
+	$("body").append(lypopbg);
+	
+    $("#__ly_pop_bg"+num).addClass("ly_pop_bg");
+    $("#ly_pop"+num).addClass("ly_pop").css("top", 200);
+
+    // z-index 증가.
+    $("#__ly_pop_bg"+num).css("z-index", parseInt($("#ly_pop"+num).css("z-index")) + parseInt(zindex));
+    $("#ly_pop"+num).css("z-index", parseInt($("#ly_pop"+num).css("z-index")) + parseInt(zindex) + 5);
+    
+    $("#ly_pop"+num).bind("remove", function(){
+    	$("#__ly_pop_bg"+num).remove();
+    });
+    
+    
+    // ESC = 팝업창 닫기
+    $(document).bind('keydown', function(e){
+    	if (e.keyCode === $.ui.keyCode.ESCAPE && $("#__ly_pop_bg"+num).attr("id") != undefined ) {
+    		webUtil.fnLypop_remove(num);
+    		e.stopPropagation();
+    	}
+    });
+};
+IosWebUtil.prototype.fnLyloadBind = function () {
+	try{
+    	$("div[name=ly_pop], .__io_ly_pop").draggable({ handle: "h1, .handle" });
+	} catch (e) {}
+	$(".__io_ly_pop .ly_pop h1,.__io_ly_pop .ly_pop .handle, .__io_ly_pop h1, .__io_ly_pop .handle").css("cursor","move");
+	$(".__io_ly_pop #pop_clse,.__io_ly_pop .pop_clse,.__io_ly_pop .io-pop_clse").unbind("click").click(function(){
+		$(this).parents("div[name=ly_pop]").slideUp(500, function(){
+			$(this).remove();
+		});
+	});
+}
+/*
+*   레이어 팝업 remove
+*   param  : 
+*   author : kfsura@iosys.co.kr
+*   since  : 2012.05.24
+*   update : 2012.05.24
+*/
+IosWebUtil.prototype.fnLypop_remove = function (num) {
+	if(num == undefined || num == ""){
+		num = "";
+	}
+    try {
+    	$("#ly_pop"+num + ", .__io_ly_pop").slideUp(500, function(){$(this).remove();$("#__ly_pop_bg"+num).remove();});
+    }
+    catch (e) {
+    }
+    $(this.openner).focus();
+};
+IosWebUtil.prototype.makeStringToNumString = function(str){
+	if(str==null || str==""){
+		return str;	
+	}
+	str = isNaN(str) ? str.replace(/[^0-9]/g, "") : str;		
+	return str;
+};
+
+/*
+ * FORM을 만드는 함수.
+ * 
+ * name : form의 이름
+ * action : submit시 실행할 페이지
+ * method : GET or POST
+ * document.body.appendChild(from); 후 사용 하길 바람.
+ * @author kfsura
+ */ 
+IosWebUtil.prototype.createForm = function(name, action, method, target){
+	var form = document.createElement("form");
+	
+	form.name = name;
+	form.action = action;
+	form.method = method;
+	form.target = target;
+	
+	return form;
+};
+
+/*
+ * INPUT을 만들고 form에 추가시키는 함수.
+ * form을 createElement로 만들면 기존의 html파일에
+ * 있던 input element들은 추가할 없다.(실험에 의한 결론 이유는..ㅠㅠ)
+ * 그래서 form을 생성시마다 넘겨줄 값은 이 함수를 이용해서 넣어야함. 
+ *
+ * form : 값을 추가할 form
+ * name : input element의 이름
+ * value : 넘겨줄 값
+ *  @author kfsura
+ */
+IosWebUtil.prototype.insertInput = function(form, name, value){
+	var input = document.createElement("input");
+	
+	input.type = "hidden";
+	input.name = name;
+	input.value = value;
+	
+	form.insertBefore(input, null);
+	
+	return form;
+};
+/*
+ * Obj 를 input 로 변환하여 form을 반환
+ * form : 값을 추가할 form
+ * name : input element의 이름
+ * value : 넘겨줄 값
+ *  @author kfsura
+ */
+IosWebUtil.prototype.Obj2Input = function(form, obj){
+	for(var name in obj){
+		var item = name;
+		var val = "";
+		if(obj[name] instanceof Object){
+			val = JSON.stringify(obj[name]);
+		} else {
+			val = obj[name];
+		}
+		form = webUtil.insertInput(form, item, val);
+	}
+	return form;
+};
+/*
+ * Obj 를 파라메타 스트링으로 변환
+ *  @author kfsura
+ */
+IosWebUtil.prototype.Obj2Param = function(obj){
+	var str = "";
+	for(var name in obj){
+		var item = name;
+		var val = "";
+		if(obj[name] instanceof Object){
+			val = jQuery.stringify(obj[name]);
+		} else {
+			val = obj[name];
+		}
+	   if(str != ""){
+		   str = str + "&";
+	   }           
+	   str = str + item + "=" + val;
+	}
+	return str;
+};
+/*
+ * 쿠키에 내용 저장하기
+ * <code> webUtil.setCookie("popup", false); </code>
+ * @author leedan
+ */
+IosWebUtil.prototype.setCookie = function(name, value) {
+	var argv = arguments;
+	var argc = arguments.length;
+	var expires = (2 < argc) ? argv[2] : null;
+	var path = (3 < argc) ? argv[3] : null;
+	var domain = (4 < argc) ? argv[4] : null;
+	var secure = (5 < argc) ? argv[5] : false;
+	document.cookie = name + "=" + escape (value) +
+				((expires == null) ? "" : ("; expires=" + expires.toGMTString())) +
+				((path == null) ? "; path=/" : ("; path=" + path)) +
+				((domain == null) ? "" : ("; domain=" + domain)) +
+				((secure == true) ? "; secure" : "");
+};
+
+/*
+ * 쿠키의 내용 가져오기
+ * <code> var popup = webUtil.getCookie("popup"); </code>
+ * @author leedan
+ */
+IosWebUtil.prototype.getCookie  = function(name) {
+	var arg = name + "=";
+	var alen = arg.length;
+	var clen = document.cookie.length;
+	var i = 0;
+	while (i < clen) {
+		var j = i + alen;
+		if (document.cookie.substring(i, j) == arg)
+			return webUtil.getCookieVal (j);
+		i = document.cookie.indexOf(" ", i) + 1;
+		if (i == 0) break;
+	}
+	return null;
+};
+
+IosWebUtil.prototype.getCookieVal  = function(offset) {
+	var endstr = document.cookie.indexOf (";", offset);
+	if (endstr == -1) endstr = document.cookie.length;
+	return unescape(document.cookie.substring(offset, endstr));
+};
+
+/*
+ * 날짜 출력
+ */
+IosWebUtil.prototype.Date2Format = function(datetime, format){
+	var _WithString = function(istr, len){
+		istr = istr.toString();
+		return "00000".substring(0, (len||2)-istr.length) + istr;
+	};
+	const WEEKDAY = ['일', '월', '화', '수', '목', '금', '토'];
+	format = format.match(/yyyy/)?format.replace(/yyyy/g, datetime.getFullYear()):format;
+	format = format.match(/MM/)?format.replace(/MM/g, _WithString(datetime.getMonth()+1)):format;
+	format = format.match(/dd/)?format.replace(/dd/g, _WithString(datetime.getDate())):format;
+	format = format.match(/HH|hh/)?format.replace(/HH/gi, _WithString(datetime.getHours())):format;
+	format = format.match(/mm/)?format.replace(/mm/g, _WithString(datetime.getMinutes())):format;
+	format = format.match(/ss/)?format.replace(/ss/g, _WithString(datetime.getSeconds())):format;
+	format = format.match(/SSS/)?format.replace(/SSS/g, _WithString(datetime.getMilliseconds(),3)):format;
+	format = format.match(/D/)?format.replace(/D/g, WEEKDAY[datetime.getDay()]):format;
+	return format;
+};
+/*
+ * 영역 프린트.(새로운 히든 아이프레임을 만들고 선택된 영역의 html을 넣어서 해당 아이프레임을 인쇄함.- kfsura@iosys.co.kr
+ *  webUtil.printArea(".tbl_reg");
+ */
+IosWebUtil.prototype.printArea = function(targetArea){
+	var printArea = $(targetArea);
+	if(printArea == undefined){
+		alert("인쇄 영역이 없습니다. 다시 확인해주세요.");
+		return;
+	}
+	var tm_html = "<iframe name=\"printFrame\" id=\"printFrame\" width=\"0\" height=\"0\"></iframe>";
+	$("body").append(tm_html);
+	setTimeout("webUtil.print('"+targetArea+"');", 10);
+};
+/*
+ * 실제 인쇄를 하는 부분.(현재창의 css파일과 속성정보를 가지고 와서 인쇄함. - kfsura@iosys.co.kr
+ */
+IosWebUtil.prototype.print = function(targetArea){
+	$("#printFrame").contents().find("head").html($(document.head).html());
+	
+	var tm_div =  document.createElement("div");
+	$(tm_div).addClass($(targetArea).attr("class")).attr("id", $(targetArea).attr("id")).width($(targetArea).width()).html($(targetArea).html());
+	$("#printFrame").contents().find("body").html(tm_div);
+	setTimeout("webUtil.printProc();", 10);
+};
+IosWebUtil.prototype.printProc = function(){
+	document.printFrame.focus();
+	document.printFrame.print();
+	$("#printFrame").remove();
+};
+/*
+ * embed태그로 미디어 재생, 옵션으로는 타입설정 및 추가 설정..
+ */
+IosWebUtil.prototype.embed = function(url, option){
+	var html = "";
+	var width = "300";
+	var height = "45";
+	var type = "audio/x-ms-wma";
+	var loop = false;
+	var autostart = false;
+	if(option != undefined){
+		width = option.width || width;
+		height = option.height || height;
+		type = option.type || type;
+		loop = option.loop || loop;
+		autostart = option.autostart || autostart;
+	}
+	html = "<embed width=\""+width+"\" height=\""+height+"\" src=\""+url+"\" type=\""+type+"\" loop=\""+loop+"\" autostart=\""+autostart+"\">";
+	return html;
+};
+
+/**
+ * 오프젝트 필터 : 오브젝트의 속성에서 필터에 해당되는지 여부를 반환함.
+ * 필터의 값에 배열 추가함 - 배열의 요소가 있다면. true임.
+ */
+IosWebUtil.prototype.objFilter = function(obj, filter){
+	var filterCnt = 0;
+	var passCnt = 0;
+	for(var fName in filter){
+		filterCnt++;
+		var val = filter[fName];
+		if(val instanceof Array){
+			var subPass = false;
+			for(var j=0; j<val.length;j++){
+				if(val[j] == obj[fName]){
+					subPass = true;
+					break;
+				}
+			}
+			if(subPass){
+				passCnt++;
+			}
+			if(filterCnt != passCnt){
+				break;
+			}
+		} else {
+			if(obj[fName] == val || val == ""){
+				passCnt++;
+			}
+			if(filterCnt != passCnt){
+				break;
+			}
+		}
+	}
+	if(filterCnt == passCnt){
+		return true;
+	} else {
+		return false;
+	}
+};
+IosWebUtil.prototype.objTrim = function(obj){
+	var resultObj = {};
+	for(var fName in obj){
+		var val = obj[fName];
+		if(val != "" ){
+			resultObj[fName] = val;
+		}
+	}
+	return resultObj;
+}
+/**
+ * 배열에서 해당속성만 배열로 받기(필터 적용됨)
+ * attr = 속성 or 속성배열
+ * array = 원본데이터 배열
+ * filter = 필터 오프젝트
+ * orginfo = 원본 배열의 정보 추가여부
+ * var a = webUtil.getAttrArray(userList, ["userHp", "userName"], {userType : "P", userStat : "A", checked : true});
+ */
+IosWebUtil.prototype.getAttrArray = function(array, attr, filter, orginfo){
+	var newArr = [];
+	if(attr != undefined && attr != "" && array instanceof Array && array.length > 0){
+		for(var i=0;i<array.length;i++){
+			var tmItem = array[i];
+			console.log(tmItem);
+			if(attr instanceof Array){
+				// 속성이 여러개의경우
+				if(filter == true || filter == undefined || webUtil.objFilter(tmItem, filter)){
+					var tmobj = {};
+					for(var j=0;j<attr.length;j++){
+						var tm_attr = attr[j];
+						tmobj[tm_attr] = tmItem[tm_attr] || "";
+					}
+					if(orginfo == true){
+						tmobj["_orgArrayIndex"] = i;
+						tmobj["_arrayIndex"] = newArr.length;
+					}
+					newArr.push(tmobj);
+				}
+			} else {
+				// 속성이 1개의 경우.
+				if(filter == true || filter == undefined || webUtil.objFilter(tmItem, filter)){
+					if(tmItem[attr] != undefined && tmItem[attr] != ""){
+						newArr.push(tmItem[attr]);
+					}
+				}
+			}
+		}
+	}
+	var uniqArr = [];
+	var uniqMap = {};
+	for(var i=0;i<newArr.length;i++){
+		if(newArr[i] instanceof Object){
+			var key = JSON.stringify(newArr[i]);
+		} else {
+			var key = newArr[i];
+		}
+		if(uniqMap[key] == undefined){
+			uniqArr.push(newArr[i]);
+			uniqMap[key] = "1";
+		}
+	}
+	return uniqArr;
+};
+/**
+ * 배열의 속성을 새로운 속성명으로 복사하여준다.(필터 적용됨)
+ * array : 오브젝트 or 오브젝트배열
+ * var a = [{a:2, b:3}]
+ * var b = webUtil.copyAttr(a, {a:c});
+ * console.log(b) -> [{a:2, b:3, c:2}]
+ */
+IosWebUtil.prototype.copyAttr = function(array, chAttr, filter){
+	if(array instanceof Array ){
+		for(var i=0;i<array.length;i++){
+			var tmItem = array[i];
+			if(filter == true || filter == undefined || webUtil.objFilter(tmItem, filter)){
+				for(var oName in chAttr){
+					var cName = chAttr[oName];
+					tmItem[cName] = tmItem[oName];
+				}
+			}
+		}
+	} else {
+		var tmItem = array;
+		if(filter == true || filter == undefined || webUtil.objFilter(tmItem, filter)){
+			for(var oName in chAttr){
+				var cName = chAttr[oName];
+				tmItem[cName] = tmItem[oName];
+			}
+		}
+	}
+	return array;
+};
+/**
+ * 배열의 속성제거(필터적용)
+ */
+IosWebUtil.prototype.deleteAttr = function(array, attr, filter){
+	if(attr != undefined && attr != "" && array instanceof Array && array.length > 0){
+		for(var i=0;i<array.length;i++){
+			var tmItem = array[i];
+			if(attr instanceof Array){
+				// 속성이 여러개의경우
+				if(filter == true || filter == undefined || webUtil.objFilter(tmItem, filter)){
+					var tmobj = {};
+					for(var j=0;j<attr.length;j++){
+						var tm_attr = attr[j];
+						delete tmItem[tm_attr];
+					}
+				}
+			} else {
+				// 속성이 1개의 경우.
+				if(filter == true || filter == undefined || webUtil.objFilter(tmItem, filter)){
+					delete tmItem[attr];
+				}
+			}
+		}
+	}
+	return array;
+};
+/**
+ * 배열의 속성을 새로운 속성명으로 복사하여준다.(필터 적용됨)
+ * array : 오브젝트 or 오브젝트배열
+ * var a = [{a:2, b:3}]
+ * var b = webUtil.copyAttr(a, {a:c});
+ * console.log(b) -> [{a:2, b:3, c:2}]
+ */
+IosWebUtil.prototype.copy = function(Obj){
+	var newItem = {};
+	if(Obj instanceof Array ){
+		newItem = new Array();
+		for(var i=0;i<Obj.length;i++){
+			var tmobj = {};
+			var item = Obj[i];
+			for(var fName in item){
+				tmobj[fName] = item[fName];
+			}
+			newItem.push(tmobj);
+		}
+	} else {
+		for(var oName in Obj){
+			newItem[oName] = Obj[oName];
+		}
+	}
+	return newItem;
+};
+/**
+ * 속성을 추출하여 배열로 구성
+ */
+IosWebUtil.prototype.getToArray = function(array, attr){
+	var newArr = [];
+	if(attr != undefined && attr != "" && array instanceof Array && array.length > 0){
+		for(var i=0;i<array.length;i++){
+			var tmItem = array[i];
+			if(tmItem[attr] != undefined && tmItem[attr] != ""){
+				newArr.push(tmItem[attr]);
+			}
+		}
+	}
+	return newArr;
+};
+/**
+ * 속성을 추출하여 맵으로 구성
+ */
+IosWebUtil.prototype.getToMap = function(array, attr){
+	var newMap = {};
+	if(attr != undefined && attr != "" && array instanceof Array && array.length > 0){
+		for(var i=0;i<array.length;i++){
+			var tmItem = array[i];
+			if(tmItem[attr] != undefined && tmItem[attr] != ""){
+				newMap[tmItem[attr]] = tmItem[attr];
+			}
+		}
+	}
+	return newMap;
+};
+/**
+ * 배열의 필터
+ */
+IosWebUtil.prototype.searchFilter = function(array, filter){
+	var newArr = [];
+	if(array && array instanceof Array){
+		for(var i=0;i<array.length;i++){
+			var tmItem = array[i];
+
+			if(webUtil.objFilter(tmItem, filter)){
+				newArr.push(tmItem);
+			}
+		}
+	}
+	var uniqArr = [];
+	var uniqMap = {};
+	for(var i=0;i<newArr.length;i++){
+		if(newArr[i] instanceof Object){
+			var key = JSON.stringify(newArr[i]);
+		} else {
+			var key = newArr[i];
+		}
+		if(uniqMap[key] == undefined){
+			uniqArr.push(newArr[i]);
+			uniqMap[key] = "1";
+		}
+	}
+	return uniqArr;
+};
+/**
+ * 배열에서 인덱스만을 새로운 배열로 받아옴.
+ * var b = webUtil.getAttrIdx(array, [1,2,3]);
+ */
+IosWebUtil.prototype.getAttrIdx = function(array, idx){
+	var newArr = [];
+	if(idx instanceof Array ){
+		for(var i=0;i<idx.length;i++){
+			var tmItem = array[idx[i]];
+			newArr.push(tmItem);
+		}
+	} else {
+		newArr.push(idx);
+	}
+	return newArr;
+};
+/**
+ * 선택자들의 값들을 배열로 받음.
+ */
+IosWebUtil.prototype.getVal = function(selector, uniqueFlag){
+	var newArr = [];
+	var newObj = {};
+	var selList = $(selector);
+	for(var i=0;i<selList.length;i++){
+		var val = $(selList[i]).val();
+		if(val != undefined && val != ""){
+			if(uniqueFlag == undefined || uniqueFlag == false || (uniqueFlag == true && newObj[val] == undefined)){
+				newArr.push(val);
+				newObj[val] = "1";
+			}
+		}
+	}
+	return newArr;
+};
+/**
+ * 선택자들의 값들을 오프젝트 배열로 받음.
+ */
+IosWebUtil.prototype.getValObj = function(selector){
+	var newArr = [];
+	var selList = $(selector);
+	for(var i=0;i<selList.length;i++){
+		var val = $(selList[i]).val();
+		if(val != undefined && val != ""){
+			var newObj = val.toObject();
+			newArr.push(newObj);
+		}
+	}
+	return newArr;
+};
+/**
+ * 선택자들의 값들을 data를 배열로 받음.
+ */
+IosWebUtil.prototype.getValDataObj = function(selector){
+	var newArr = [];
+	var selList = $(selector);
+	for(var i=0;i<selList.length;i++){
+		var newObj = $(selList[i]).data();
+		if($(selList[i]).prop("tagName") == "INPUT" || $(selList[i]).prop("tagName") == "SELECT" || $(selList[i]).prop("tagName") == "TEXTAREA"){
+			newObj[$(selList[i]).prop("name")] = $(selList[i]).val();
+		}
+		newArr.push(newObj);
+	}
+	return newArr;
+};
+/**
+ * 선택자의 html 내용을 리턴받고 해당 선택자의 html은 삭제함.
+ */
+IosWebUtil.prototype.getHtml = function(selector){
+	var obj = $(selector);
+	var html = obj.html();
+	obj.remove();
+	return html;
+};
+/**
+ * 배열의 일부 요소 지움
+ */
+IosWebUtil.prototype.arrayRemove = function(array, from, to) {
+	var rest = array.slice((to || from) + 1 || array.length);
+	array.length = from < 0 ? array.length + from : from;
+	return array.push.apply(array, rest);
+};
+/**
+ * from을 오브젝트로 변환함.
+ */
+IosWebUtil.prototype.getFormObj = function(selector){
+	var formArray = $(selector).serializeArray();
+	var object = {};
+	if(formArray instanceof Array && formArray.length > 0){
+		for(var i = 0; i<formArray.length ; i++){
+			var tmObj = formArray[i];
+			if(object[tmObj.name] == undefined){
+				object[tmObj.name] = tmObj.value;
+			} else {
+				if(object[tmObj.name] instanceof Array){
+					object[tmObj.name].push(tmObj.value);
+				} else {
+					var oldValue = object[tmObj.name]; 
+					object[tmObj.name] = [oldValue, tmObj.value];
+				}
+			}
+		}
+	}
+	return object;
+};
+/**
+ * html 을 가지고온다.
+ */
+IosWebUtil.prototype.getHtml = function(selector){
+	var obj = $(selector);
+	var html = obj.html();
+	obj.remove();
+	return html;
+};
+IosWebUtil.prototype.getCall = function(url, paramObj, target) {
+	var target = target || "_self";
+	var _tmpform = webUtil.createForm("__dataform", url, "get", target);
+	var fromObj = paramObj;
+	_tmpform = webUtil.Obj2Input(_tmpform, fromObj);
+	document.body.appendChild(_tmpform);
+	_tmpform.submit();
+	document.body.removeChild(_tmpform);
+};
+
+IosWebUtil.prototype.postCall = function(url, paramObj, target) {
+	var target = target || "_self";
+	var _tmpform = webUtil.createForm("___dataform", url, "post", target);
+	var fromObj = paramObj;
+	_tmpform = webUtil.Obj2Input(_tmpform, fromObj);
+	document.body.appendChild(_tmpform);
+	_tmpform.submit();
+	document.body.removeChild(_tmpform);
+};
+
+IosWebUtil.prototype.getClassObj = function(classa){
+	var arrstr = classa.split("-");
+	var classObj = {};
+	for(var i =0; i<12;i++){
+		classObj["class" + (i+1)] = arrstr[i];
+	}
+	return classObj;
+};
+
+/**
+ * 사용자 브라우저 정보
+ */
+IosWebUtil.prototype.getUserAgent = function(){
+	var userAgentStr = navigator.userAgent.toUpperCase();
+	var os = "";
+	var browser = "";
+	var browserVer = "";
+	var device = "";
+	var deviceType = "";
+	if(userAgentStr.indexOf("WINDOWS") != -1) {
+		os = "Windows";
+	} else if(userAgentStr.indexOf("ANDROID") != -1) {
+		os = "Android";
+	} else if(userAgentStr.indexOf("IPAD") != -1) {
+		os = "iPad";
+	} else if(userAgentStr.indexOf("IPHONE") != -1) {
+		os = "iPhone";
+	} else if(userAgentStr.indexOf("MAC") != -1) {
+		os = "MAC";
+	} else {
+		os = "ETC";
+	}
+	if(os == "iPhone"){
+		device = "Mx-ip";
+		deviceType = "mobile";
+	} else if(os == "iPad"){
+		device = "Mx-it";
+		deviceType = "tablet";
+	} else if(os == "Android" && userAgentStr.indexOf("MOBILE") != -1){
+		device = "Mx-ap";
+		deviceType = "mobile";
+	} else if(os == "Android" && userAgentStr.indexOf("MOBILE") == -1){
+		device = "Mx-at";
+		deviceType = "tablet";
+	} else if(userAgentStr.indexOf("MOBILE") != -1){
+		device = "Ex-ap";
+		deviceType = "mobile";
+	} else {
+		device = "Fx";
+		deviceType = "PC";
+	}
+	
+	userAgentStr = navigator.userAgent;
+	var patternStr = "([0-9]{1,}[.0-9]{0,})";
+	var removeStr = "";
+	if(userAgentStr.indexOf("Edge") != -1){
+		browser = "Edge";
+		removeStr = browser + "/";
+		patternStr = removeStr + patternStr;
+	}else if(userAgentStr.indexOf("Chrome") != -1){
+		browser = "Chrome";
+		removeStr = browser + "/";
+		patternStr = removeStr + patternStr;
+	}else if(userAgentStr.indexOf("Firefox") != -1){
+		browser = "Firefox";
+		removeStr = browser + "/";
+		patternStr = removeStr + patternStr;
+	}else if(userAgentStr.indexOf("Safari") != -1){
+		browser = "Safari";
+		removeStr = browser + "/";
+		patternStr = removeStr + patternStr;
+	}else if(userAgentStr.indexOf("MSIE") != -1){
+		browser = "MSIE";
+		removeStr = browser + " ";
+		patternStr = removeStr + patternStr;
+	}else if(userAgentStr.indexOf("Swing") != -1){
+		browser = "Swing";
+		removeStr = browser + "/";
+		patternStr = removeStr + patternStr;
+	}else if(userAgentStr.indexOf(".NET") != -1){
+		browser = "MSIE";
+		removeStr = "rv:";
+		patternStr = removeStr + patternStr;
+	}
+	var tm = userAgentStr.match(patternStr);
+	if(tm != undefined && tm instanceof Array && tm.length > 0){
+		browserVer = tm[0].replace(removeStr, "");
+	} else {
+		browserVer = "0";
+	}
+	
+	var userAgent = { os:os, browser:browser, device:device, deviceType:deviceType, browserVer:browserVer};
+	return userAgent;
+};
+IosWebUtil.prototype.windowOpen = function(url, paramObj, option, callBack) {
+	// 데이터
+	var target = "win_" + webUtil.Date2Format(new Date(), "HHmmssSSS");
+	if(option.target != undefined){
+		target = "win_" + option.target;
+	}
+	var _tmpform = this.createForm("apiDataform", url, "post", target);
+	_tmpform = this.Obj2Input(_tmpform, paramObj);
+	document.body.appendChild(_tmpform);
+	
+	option = option || {};
+	
+	// 팝업
+	var scrollbars = option.scrollbars || "yes";
+	
+	var w = option.width || (screen.availWidth -20);
+	var h = option.height || (screen.availHeight - 80);
+	
+	var t = option.top || 0; 
+	var l = option.left || 0;
+	var re = option.resize || "no";
+	if(option.left == undefined){
+		l = ((screen.width - w) / 2);
+	}
+	if(option.top == undefined){
+		t = ((screen.height - h) > 150 ? ((screen.height - h) / 3) : 0);		
+	}
+	// alert(w  +":"+ h  +"/"+ l  +":"+  t  +"/"+ screen.width +"/"+ screen.height +"/"+ screen.availWidth +":"+ screen.availHeight);
+	
+	var Status= "toolbar=no, location=no, directories=no, status=no, menubar=no,  copyhistory=no, scrollbars="+scrollbars+", resizable=" + re + ", width="+w+", height="+h+", left="+l+", top="+t;
+	var uri = webUtil.contextPath + "/pages/commons/blank.html";
+	var TeamsUiApiWin = window.open(uri, target, Status);
+	
+	if(TeamsUiApiWin == undefined){
+		alert("팝업이 차단되었습니다. 팝업 차단을 해제 후 이용해 주시기바랍니다.");
+		return;
+	} else {
+		_tmpform.submit();
+		document.body.removeChild(_tmpform);
+		if(callBack != undefined && callBack instanceof Function){
+			var callBackKey = "fn_" + webUtil.Date2Format(new Date(), "HHmmssSSS");
+			$ctrl.setCallBack(callBackKey, callBack);
+			var timer = setInterval(function() {   
+				if(TeamsUiApiWin.closed) {  
+					clearInterval(timer);  
+					if($ctrl.isCallBack(callBackKey)){
+						$ctrl.execCallBack(callBackKey);
+					}
+				}  
+			}, 1500);
+		}
+		$(TeamsUiApiWin).focus();
+	}
+	return TeamsUiApiWin;
+};
+IosWebUtil.prototype.datepickerSet = function(e) {
+	if(e != undefined && (e.keyCode == 8 || e.keyCode == 46)) {
+    	try{
+    		$.datepicker._clearDate(e.target);
+    	} catch (e) {
+    		var target = $(e.target);
+    		if(target.prop("tagName") == "INPUT" && target.prop("type") == "text" && target.prop("readonly") == true){
+    			target.val("");
+    		}
+    	}
+    }
+};
+IosWebUtil.prototype.codeTrim = function(id){
+	if(id === undefined){ id = ""; }
+    var tmpCode = id + "-";
+    var pos = tmpCode.indexOf("-0-");
+    if(pos == -1){
+        pos = id.length;
+    }else{
+        id = tmpCode;
+    }
+    var pcode = id.substring(0, pos) + "-";
+    return pcode;
+};
+
+IosWebUtil.prototype.splitClassa = function(classa){
+	var arrClassa = ["","","","","","","","","","","",""];
+    var tmpClassa = classa.split("-");
+
+    for(var i=0; i<arrClassa.length; i++){
+        var str = "";
+        for(var j=0; j<tmpClassa.length; j++){
+            if(j > i){
+                str += "0-";
+            }else{
+                str += tmpClassa[j] + "-";
+            }
+        }
+        str = str.substring(0, str.length-1);
+        arrClassa[i] = str;
+    }
+    return arrClassa;
+};
+/**
+ * 원본 이미지 보기 - 윈도우 팝업.
+ */
+IosWebUtil.prototype.imageWindow = function(img) {
+	var w = img.naturalWidth; 
+	var h = img.naturalHeight; 
+	var winl = (screen.width-w)/2; 
+	var wint = (screen.height-h)/3; 
+
+	if (w >= screen.width) { 
+		winl = 0; 
+		h = (parseInt)(w * (h / w)); 
+	} 
+
+	if (h >= screen.height) { 
+		wint = 0; 
+		w = (parseInt)(h * (w / h)); 
+	} 
+
+	var js_url = "<script type='text/javascript'> \n"; 
+		js_url += "<!-- \n"; 
+		js_url += "var ie=document.all; \n"; 
+		js_url += "var nn6=document.getElementById&&!document.all; \n"; 
+		js_url += "var isdrag=false; \n"; 
+		js_url += "var x,y; \n"; 
+		js_url += "var dobj; \n"; 
+		js_url += "function movemouse(e) \n"; 
+		js_url += "{ \n"; 
+		js_url += "  if (isdrag) \n"; 
+		js_url += "  { \n"; 
+		js_url += "    dobj.style.left = nn6 ? tx + e.clientX - x : tx + event.clientX - x; \n"; 
+		js_url += "    dobj.style.top  = nn6 ? ty + e.clientY - y : ty + event.clientY - y; \n"; 
+		js_url += "    return false; \n"; 
+		js_url += "  } \n"; 
+		js_url += "} \n"; 
+		js_url += "function selectmouse(e) \n"; 
+		js_url += "{ \n"; 
+		js_url += "  var fobj      = nn6 ? e.target : event.srcElement; \n"; 
+		js_url += "  var topelement = nn6 ? 'HTML' : 'BODY'; \n"; 
+		js_url += "  while (fobj.tagName != topelement && fobj.className != 'dragme') \n"; 
+		js_url += "  { \n"; 
+		js_url += "    fobj = nn6 ? fobj.parentNode : fobj.parentElement; \n"; 
+		js_url += "  } \n"; 
+		js_url += "  if (fobj.className=='dragme') \n"; 
+		js_url += "  { \n"; 
+		js_url += "    isdrag = true; \n"; 
+		js_url += "    dobj = fobj; \n"; 
+		js_url += "    tx = parseInt(dobj.style.left+0); \n"; 
+		js_url += "    ty = parseInt(dobj.style.top+0); \n"; 
+		js_url += "    x = nn6 ? e.clientX : event.clientX; \n"; 
+		js_url += "    y = nn6 ? e.clientY : event.clientY; \n"; 
+		js_url += "    document.onmousemove=movemouse; \n"; 
+		js_url += "    return false; \n"; 
+		js_url += "  } \n"; 
+		js_url += "} \n"; 
+		js_url += "document.onmousedown=selectmouse; \n"; 
+		js_url += "document.onmouseup=new Function('isdrag=false'); \n"; 
+		js_url += "//--> \n"; 
+		js_url += "</"+"script> \n"; 
+
+	var settings;
+
+	if (navigator.userAgent.toLowerCase().indexOf("gecko") != -1) {
+		settings  ='width='+(w+20)+','; 
+		settings +='height='+(h+20)+','; 
+	} else {
+		settings  ='width='+w+','; 
+		settings +='height='+h+','; 
+	}
+	settings +='top='+wint+','; 
+	settings +='left='+winl+','; 
+	settings +='scrollbars=yes,'; 
+	settings +='resizable=yes,'; 
+	settings +='status=no'; 
+
+
+	win=window.open("","image_window",settings);
+	if(win == undefined){
+		alert("팝업이 차단되었습니다. 팝업 차단을 해제 후 이용해 주시기바랍니다.");
+		return;
+	}
+	win.document.open(); 
+	win.document.write ("<html><head> \n<meta http-equiv='imagetoolbar' CONTENT='no'> \n<meta http-equiv='content-type' content='text/html; charset=utf-8'>\n"); 
+	var size = "원본 이미지 보기( " + w + " x " + h + " )";
+	win.document.write ("<title>"+size+"</title> \n"); 
+	if(w >= screen.width || h >= screen.height) { 
+		win.document.write (js_url); 
+		var click = "ondblclick='window.close();' style='cursor:move' title=' "+size+" \n\n 이미지 사이즈가 화면보다 큽니다. \n 왼쪽 버튼을 클릭한 후 마우스를 움직여서 보세요. \n\n 더블 클릭하면 닫혀요. '"; 
+	} 
+	else 
+		var click = "onclick='window.close();' style='cursor:pointer' title=' "+size+" \n\n 클릭하면 닫혀요. '"; 
+	win.document.write ("<style>.dragme{position:relative;}</style> \n"); 
+	win.document.write ("</head> \n\n"); 
+	win.document.write ("<body leftmargin=0 topmargin=0 bgcolor=#dddddd style='cursor:arrow;'> \n"); 
+	win.document.write ("<table width=100% height=100% cellpadding=0 cellspacing=0><tr><td align=center valign=middle><img src='"+img.src+"' width='"+w+"' height='"+h+"' border=0 class='dragme' "+click+"></td></tr></table>");
+	win.document.write ("</body></html>"); 
+	win.document.close(); 
+
+	if(parseInt(navigator.appVersion) >= 4){win.window.focus();} 
+}
+/**
+ * html 태그제거
+ */
+IosWebUtil.prototype.removeHtml = function(text) {
+	text = text.replace(/&nbsp;/ig, " "); // 공백      
+	// HTML 태그제거
+	text = text.replace(/(<([^>]+)>)/gi, "");
+
+	// shkim.add.
+	text = text.replace(/<(no)?script[^>]*>.*?<\/(no)?script>/ig, "");
+	text = text.replace(/<style[^>]*>.*<\/style>/ig, "");
+	text = text.replace(/<(\"[^\"]*\"|\'[^\']*\'|[^\'\">])*>/ig, "");
+	text = text.replace(/<\\w+\\s+[^<]*\\s*>/ig, "");
+	text = text.replace(/&[^;]+;/ig, "");
+	text = text.replace(/\\s\\s+/ig, "");
+
+	return text;
+}
+/*
+ * 쿠키에 내용 저장하기
+ * <code> webUtil.setCookie("popup", false); </code>
+ * @author leedan
+ */
+IosWebUtil.prototype.setCookie = function(name, value) {
+	var argv = arguments;
+	var argc = arguments.length;
+	var expires = (2 < argc) ? argv[2] : null;
+	var path = (3 < argc) ? argv[3] : null;
+	var domain = (4 < argc) ? argv[4] : null;
+	var secure = (5 < argc) ? argv[5] : false;
+	document.cookie = name + "=" + escape (value) +
+				((expires == null) ? "" : ("; expires=" + expires.toGMTString())) +
+				((path == null) ? "; path=/" : ("; path=" + path)) +
+				((domain == null) ? "" : ("; domain=" + domain)) +
+				((secure == true) ? "; secure" : "");
+}	
+/*
+ * 쿠키의 내용 가져오기
+ * <code> var popup = webUtil.getCookie("popup"); </code>
+ * @author leedan
+ */
+IosWebUtil.prototype.getCookie  = function(name) {
+	var arg = name + "=";
+	var alen = arg.length;
+	var clen = document.cookie.length;
+	var i = 0;
+	while (i < clen) {
+		var j = i + alen;
+		if (document.cookie.substring(i, j) == arg)
+			return webUtil.getCookieVal (j);
+		i = document.cookie.indexOf(" ", i) + 1;
+		if (i == 0) break;
+	}
+	return null;
+}
+IosWebUtil.prototype.getCookieVal  = function(offset) {
+	var endstr = document.cookie.indexOf (";", offset);
+	if (endstr == -1) endstr = document.cookie.length;
+	return unescape(document.cookie.substring(offset, endstr));
+}
+
+/**
+ * 서버 웨이팅. 로딩바
+ * loadingBarKey
+ * webUtil.waitingLoadingBar(loadingBarKey, url);
+ */
+IosWebUtil.prototype.waitingLoadingBar = function(loadingBarKey, url, time) {
+	// 로딩.
+	webUtil.fnLoadingLayerView(999);
+	(function(loadingBarKey, url, time){
+		var waitingObj = {};
+		var loadingBarKey = loadingBarKey;
+		var url = url;
+		var time = time || 1500;
+		waitingObj = setInterval(function() {
+			var nparmap = { loadingBarKey : loadingBarKey};
+			$.rest.url(url).post({
+				param : nparmap,
+				success : function(data, status){
+					if(data.result == "success" ) {
+						if(data.status == "end"){
+							webUtil.fnLoadingLayerClose();
+							clearInterval(waitingObj);
+						}
+					} else {
+						webUtil.fnLoadingLayerClose();
+						clearInterval(waitingObj);
+					}
+				}
+			});
+		}, time);
+	})(loadingBarKey, url);
+}
+
+//js 연동
+var $ctrl = {app : {}, scope : {}, callBack : {}};
+$ctrl.setApp = function(name, app){
+	this.app[name] = app;
+};
+$ctrl.getApp = function(name){
+	return this.app[name];
+};
+$ctrl.setScope = function(name, scope){
+	this.scope[name] = scope;
+};
+$ctrl.getScope = function(name){
+	return this.scope[name];
+};
+$ctrl.removeScope = function(name){
+	delete this.scope[name];
+};
+$ctrl.setCallBack = function(name, fn){
+	this.callBack[name] = fn;
+};
+$ctrl.execCallBack = function(name, data){
+	var resutObj = {};
+	if(data != undefined && typeof data == "object"){
+		resutObj = webUtil.copy(data);
+	}
+	if(this.callBack[name] != undefined) {
+		this.callBack[name](resutObj);
+	} else {
+		console.debug("function undefined - key : " + name);
+	}
+};
+$ctrl.isCallBack = function(name){
+	return this.callBack[name] instanceof Function;
+};
+$ctrl.removeCallBack = function(name){
+	this.callBack[name] = undefined;
+	delete this.callBack[name];
+};
+
+/**
+ * Rest API for jQuery
+ * @author Saebyeok Lee 
+ */
+(function($){
+	'use strict';
+	$.rest = {
+			_url : '',
+			_success : function(data, status, jqXHR){ 
+				// debug
+				console.error('Please add success function into your rest parameter!', data);
+			},
+			_error : function(jqXHR, status) { 
+				// debug
+				console.error('Error', jqXHR);
+			}, 
+			url : function(url){
+				this._url = url;
+				return this;
+			},
+			get : function(opt){
+				/*
+				if((sso != undefined) && !sso.isLogin){
+					return this;
+				}
+				*/
+				
+				opt.param = opt.param || {};
+				opt.success = opt.success || this._success;
+				opt.error = opt.error|| this._error;
+				
+				if(this._url == ''){
+					console.error('Url is undefined');
+					return;
+				}
+				$.ajax({
+					url : this._url + '?' + $.param(opt.param) + '#',
+					type: 'GET',
+					cache: false,
+					success: opt.success,
+					error: opt.error
+				});
+				
+				return this;
+			},
+			post : function(opt){
+				return this.http(opt, 'post');
+			},
+			patch : function(opt){
+				return this.http(opt, 'patch');	
+			},
+			put : function(opt){
+				return this.http(opt, 'put');
+			},
+			file : function(opt){
+				return this.http(opt, 'file');
+			},
+			remove : function(opt){
+				if((sso != undefined) && !sso.isLogin){
+					return this;
+				}
+				opt.param = opt.param || (opt.data || {});
+				$.ajax({
+					type: 'DELETE',
+					url: this._url,
+					data: JSON.stringify(opt.param),
+					cache: false,
+					contentType : 'application/json; charset=UTF-8',
+					success : opt.success,
+					error : opt.error
+				})
+				return this;
+			},
+			http : function(opt, method){
+				opt.param = opt.param || (opt.data || {});
+				//opt.success = opt.success || this._success;
+				opt._success = function(data, textStatus, jqXHR){
+					
+					if(typeof data === "string"){
+						try{
+							data = String2Object(data);
+						} catch (e) {
+						}
+					}
+					
+					if(typeof data == "object"){
+						if(data.errorMessage != undefined && data.errorMessage != ""){
+							console.error(data.errorMessage);
+						}
+						if(data.result == "ssoError" || data.result == "authError"){
+	                		$("body").append("<div id='____ssoError____' style='width:0px;height:0px;display:none;'>"+data.message+"</div>");
+	                		return;
+						}
+					}
+					(opt.success || $.rest._success)(data, textStatus, jqXHR);
+				};
+				
+				//opt.error = opt.error|| this._error;
+				opt._error = function(jqXHR, textStatus, errorThrown){
+					webUtil.pushMeg("Internet connection failed");
+					(opt.error || $.rest._error)(jqXHR, textStatus, errorThrown);
+				};
+				if(this._url == ''){
+					console.error('Url is undefined');
+					return;
+				}
+				
+				var ajaxObj = {
+						type : method, 
+						url: this._url,
+						cache: false,
+						contentType : 'application/json; charset=UTF-8',
+						data: method == "file" ? opt.param : JSON.stringify(opt.param),
+						success : opt._success,
+						error : opt._error
+					};
+				
+				// file
+				if(method == "file"){
+					ajaxObj.type = "post";
+					ajaxObj.processData = false;
+					ajaxObj.contentType = false;
+				}
+				
+				$.ajax(ajaxObj);
+				
+				return this;
+			},
+			success : function(fn){
+				if(typeof fn == 'function'){
+					this._success = fn;
+				}else{
+					console.error('success callback is not a function');
+				}
+				return this;
+			},
+			error : function(fn){
+				if(typeof fn == 'function'){
+					this._error = fn;
+				}else{
+					console.error('error callback is not a function');
+				}
+				return this;
+			}
+	}
+	
+})(jQuery);
+
+
+/* 메뉴 추가 */
+
+
+function subMenuView(id) {
+	$("nav li.menu_item").removeClass("active");
+	$("nav li."+id).addClass("active");
+}
+// 슬라이드 메뉴 열기
+$(".header .menu_btn").on("click", function() {
+	$(".slide_menu_box").addClass("active")
+	$( ".slide_menu_box" ).animate( {
+			left: '0',
+			opacity:"1"
+	}, 30, function(){
+		$( ".slide_menu" ).animate( {
+				left: '0'
+		}, 50);
+	});
+})
+
+// 슬라이드 메뉴 닫기
+$(".btn_menu_close").on("click", function() {
+	$( ".slide_menu" ).animate( {
+	        left: '-285px'
+	}, 20, function(){
+		$( ".slide_menu_box" ).animate( {
+				left: '-100%',
+				opacity:"0"
+		}, 50, function(){
+			$(".slide_menu_box").removeClass("active");
+		});
+	});
+})
+
+function popSiteMove(url){
+	var paramsMap = {};
+	webUtil.windowOpen(url, paramsMap, {width : 900, height : 860});
+}
+
+function siteMap(selector) {
+	  // GNB
+	    // console.log($(site_menu))
+	  //alert(selector)
+	  var content = '<nav>';
+	
+	if(selector == "#navbar"){
+		var type = "gnb"
+	} else if(selector == ".global_menu_in"){
+//		 content = content+ ' <div class="btn_close" onClick="modal_hide(\'.global_menu\')"><i  aria-hidden="true" class="xi-close-thin"></i></div> '
+	}
+	      content = content+ ' <ul class="manu">';
+	      
+	  for (var i = 0; i < site_menu.length; i++) { //배열 출력
+		if( site_menu[i][3] == "99" || (site_menu[i][3].substr(0, 1) == "2" && type == "gnb") ){ 
+			continue; 
+		}
+	    content = content + '<li class="menu_item menu_sub_'+i+' type_'+site_menu[i][3]+'"';
+		if (site_menu[i][4] != undefined){
+			//content = content + ' onClick="subMenuView(\'menu_sub_'+ i +'\')"';
+		} else {
+			content = content + ' onClick="location.href=\''+site_menu[i][2]+'\'"';
+		}
+		content = content + '>';
+	    content = content + '<a class="main_menu" tabindex="0" href="#none" title="' + site_menu[i][1] + '">' + site_menu[i][0] + '</a>';
+	    if (site_menu[i][4] != undefined) {
+
+	      content = content + '<ul class="submenu">';
+	      //  alert(site_menu[i][4].length)
+
+	      for (var j = 0; j < site_menu[i][4].length; j++) { //배열 출력
+	    	//감독위원 및 전문위원 신청 메뉴의 경우 메인화면과 동일하게 팝업으로 처리(23-01-11)
+	    	if(site_menu[i][4][j][0] == "감독위원 신청" || site_menu[i][4][j][0] == "시험감독 신청" || site_menu[i][4][j][0] == "전문위원 신청"){
+	    		content = content + '<li class="sub"><a title="' + site_menu[i][4][j][0] +'" href="' + site_menu[i][4][j][2] + '" onclick="javascript:popSiteMove(this.href); return false;">' + site_menu[i][4][j][0] + '</a>';
+	    	}else{
+	    		content = content + '<li class="sub"><a title="' + site_menu[i][4][j][0] +'" href="' + site_menu[i][4][j][2] + '">' + site_menu[i][4][j][0] + '</a>';
+	    	}
+	        
+	        //'" target="' + site_menu[i][4][j][3] + '"
+	        if (site_menu[i][4][j][5] != undefined) {
+	          content = content + '<ul class="ssubmenu">';
+	          for (var k = 0; k < site_menu[i][4][j][5].length; k++) { //배열 출력
+	            content = content + '<li class="ssub"><a class="sub_menu" href="' + site_menu[i][4][j][5][k][4] + '">' + site_menu[i][4][j][5][k][0] + '</a></li>';
+	            //target="' + site_menu[i][4][j][5][k][3] + '"
+	            if (site_menu[i][4][j][5][k][5] != undefined) {
+	              content = content + '<ul class="sssubmenu">';
+	              for (var l = 0; l < site_menu[i][4][j][5][k][5].length; k++) { //배열 출력
+	                content = content + '<li class="sssub"><a href="' + site_menu[i][4][j][5][k][5][l][4] + '">' + site_menu[i][4][j][5][k][5][l][0] + '</a></li>'
+	                //target="' + site_menu[i][4][j][5][k][5][l][3] + '"
+	              }
+	              content = content + '</ul>';
+	            }
+	          }
+	          content = content + '</ul>';
+	        }
+	        content = content + '</li>';
+	      }
+	      content = content + '</ul>';
+	    }
+	    content = content + '</li>';
+	  }
+	  content = content + '</ul>';
+	  content = content + '</nav>';
+	//  alert(content)
+	  if(selector == ".global_menu_in"){
+	  $(selector).prepend(content)
+	  } else {
+		  $(selector).html(content)
+
+	  }
+	  //});
+	}
+
+function modal_hide(selector) {
+	if(selector == ".global_menu"){
+		$("a.site_map").focus();	
+	}
+	$(selector).hide();
+}
+function modal_show(selector,type) {
+	var type = type;
+	if(type=="flex"){
+		$(selector).css("display","flex");
+	} else {
+		$(selector).show();
+	}
+	var nowWidth = Number(($("body").css("width")).replace("px",""))
+	if (selector == ".global_menu"){
+		if( nowWidth >= 1050 ){
+			$(".global_menu_in").attr("tabindex","0")
+			$(".global_menu_in").focus();
+			$(".global_menu_in").attr("tabindex","-1")
+		} else if( nowWidth < 1050 ) {
+			$(".global_menu .function").attr("tabindex","0")
+			$(".global_menu .function").focus();
+			$(".global_menu .function").attr("tabindex","-1")
+		}
+		$(".global_menu_in .btn_close").keydown(function (e) {
+			if (e.keyCode == 9) {
+				$(".global_menu_in").attr("tabindex","0")
+				$(".global_menu_in").focus();
+				
+				
+			}
+		});
+
+	}
+}
+function headbanner(number){
+	if(number == 2){
+		setCookie( "topPop", "done" , 1 );
+	}
+	$(".header_banner").removeClass("active")
+	$("#gnb").removeClass("head_banner");
+	$("#content").removeClass("head_banner");
+	$(".global_menu").removeClass("head_banner");
+}
+function setCookie( name, value, expiredays ) {
+	var todayDate = new Date();
+	todayDate.setDate( todayDate.getDate() + expiredays );
+	document.cookie = name + "=" + escape( value ) + "; path=/; expires=" + todayDate.toGMTString() + ";"
+}
+
+function onToolTip( arg ){
+	$(".tip").remove();
+	
+	var html = '<div class="tip">'+arg.event.url+'</div>'
+	$(arg.el).parents(".fc-daygrid-event-harness").append(html)
+}
+
+function viewCal(id){
+	$(".schedule_head .btns span.blind").html("");	
+switch (id){
+	//date portion		 
+
+	case 'all': //add days
+		$(".schedule_calendar h2.blind").html("전체 일정")
+		$(".fc-daygrid-event").show();
+		$(".schedule_head .btns").removeClass("active");
+		 $(".schedule_head .btns:nth-child(1)").addClass("active");
+		 $(".schedule_head .btns:nth-child(1) span.blind").html("선택됨");
+		 
+		 $("#calendar").prepand("")
+		break;
+	case '1': //add months
+		$(".schedule_calendar h2.blind").html("빅데이터 분석기사 일정");
+		$(".fc-daygrid-event").hide();
+		$(".fc-daygrid-event.type_1").show();
+		$(".schedule_head .btns").removeClass("active");
+		 $(".schedule_head .btns:nth-child(2)").addClass("active")	;	
+		 $(".schedule_head .btns:nth-child(2) span.blind").html("선택됨");
+		break;
+	case '2': //add years
+		$(".schedule_calendar h2.blind").html("데이터 분석 일정");
+		$(".fc-daygrid-event").hide();
+		$(".fc-daygrid-event.type_2").show();
+		$(".schedule_head .btns").removeClass("active");
+		 $(".schedule_head .btns:nth-child(3)").addClass("active")		;	
+		 $(".schedule_head .btns:nth-child(3) span.blind").html("선택됨");
+		break;
+	//time portion		 
+	case '3': //add days
+		$(".schedule_calendar h2.blind").html("SQL 일정");
+		
+		$(".fc-daygrid-event").hide();
+		$(".fc-daygrid-event.type_3").show();
+		$(".schedule_head .btns").removeClass("active");
+		 $(".schedule_head .btns:nth-child(4)").addClass("active");
+		 $(".schedule_head .btns:nth-child(4) span.blind").html("선택됨");
+		break;
+	case '4': //add minutes
+		$(".schedule_calendar h2.blind").html("데이터 아키텍처 일정");
+		$(".fc-daygrid-event").hide();
+		$(".fc-daygrid-event.type_4").show();
+		$(".schedule_head .btns").removeClass("active");
+		 $(".schedule_head .btns:nth-child(5)").addClass("active");			
+		 $(".schedule_head .btns:nth-child(5) span.blind").html("선택됨");
+		break;
+	}
+
+	
+}
+
+function fnOnlyNo(a){
+	//console.log(a.value);
+	a.value = a.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
+}
+
+function isMobile() {
+	var result;
+	var windowPC = /Windows NT/i.test(navigator.userAgent)
+	if (!(windowPC)) {
+		result = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+		if (navigator.maxTouchPoints > 4) {
+			result = true;
+		}
+	} else {
+		result = false;
+	}
+	return result;
+}
+
+
+function inputYMDNumber(obj) {
+
+    // @see DELETE 키버튼이 눌리지 않은 경우에만 실행
+
+    if(event.keyCode != 8) {
+
+        // @see 숫자와 하이픈(.)기호의 값만 존재하는 경우 실행
+
+        if(obj.value.replace(/[0-9 \.]/g, "").length == 0) {
+
+            // @see 하이픈(.)기호를 제거한다.
+
+            let number = obj.value.replace(/[^0-9]/g,"");
+
+            let ymd = "";
+
+            // @see 문자열의 길이에 따라 Year, Month, Day 앞에 하이픈(-)기호를 삽입한다.
+
+            if(number.length < 4) {
+
+                return number;
+
+            } else if(number.length < 6){
+
+                ymd += number.substr(0, 4);
+
+                ymd += ".";
+
+                ymd += number.substr(4);
+
+            } else {
+
+                ymd += number.substr(0, 4);
+
+                ymd += ".";
+
+                ymd += number.substr(4, 2);
+
+                ymd += ".";
+
+                ymd += number.substr(6);
+
+            }
+
+          
+            
+            if(ymd.length >= 10) {
+            	  
+            	// @see 날짜 유효성 체크
+                var isDateVal = checkValidDate(obj.value);
+                if(!isDateVal) {
+                	 alert("날자 형식이 아닙니다.");
+                	 obj.value = "";
+                	 return false;
+                }	
+
+            }
+
+            obj.value = ymd;
+
+        } else {
+
+            alert("숫자 이외의 값은 입력하실 수 없습니다.");
+
+            //@see 모든 값은 삭제한다.
+
+            obj.value = "";
+            return false;
+        }
+
+    } else {
+        return false;
+
+    }
+
+}
+
+function checkValidDate(value) {
+	var result = true;
+	try {
+	    var date = value.split(".");
+	    var y = parseInt(date[0], 10),
+	        m = parseInt(date[1], 10),
+	        d = parseInt(date[2], 10);
+	    
+	    var dateRegex = /^(?=\d)(?:(?:31(?!.(?:0?[2469]|11))|(?:30|29)(?!.0?2)|29(?=.0?2.(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00)))(?:\x20|$))|(?:2[0-8]|1\d|0?[1-9]))([-.\/])(?:1[012]|0?[1-9])\1(?:1[6-9]|[2-9]\d)?\d\d(?:(?=\x20\d)\x20|$))?(((0?[1-9]|1[012])(:[0-5]\d){0,2}(\x20[AP]M))|([01]\d|2[0-3])(:[0-5]\d){1,2})?$/;
+	    result = dateRegex.test(d+'-'+m+'-'+y);
+	} catch (err) {
+		result = false;
+	}    
+    return result;
+}

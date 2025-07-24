@@ -1,0 +1,80 @@
+site_menu= new Array();
+site_menu = [
+	
+	["메인","Home","/www/main.do","99"],
+	["자격안내","자격안내","/www/sub/a_07.do","10",
+			[
+				["빅데이터분석기사","sub","/www/sub/a_07.do","10"],
+				["데이터분석","sub","/www/sub/a_05.do","10"],
+				["SQL","sub","/www/sub/a_03.do","10"],
+				["데이터아키텍처","sub","/www/sub/a_01.do","10"],
+				["응시자격 자가진단","sub","/www/sub/self_diag.do","10"]
+			]
+	],
+	["시험접수","시험접수","/www/sub/accept/guide.do","10",
+			[
+				["접수안내","accept","/www/accept/guide.do","10"],
+				["시험일정","accept","/www/accept/schedule.do","10"],
+				["접수신청","accept","/www/accept/list.do","10"],
+				["접수조회","accept","/www/mypage/accept/list.do","10"],
+				["응시자 유의사항","accept","/www/accept/warning.do","10"]
+			]
+	],
+	["시험결과","시험결과","/","10",
+			[
+				["결과확인","mypage","/www/mypage/accept/result.do","10"],
+				["재검토신청","result","/www/board/review/list.do","10"],
+				/*["보수교육","result","/","10"]*/
+			]
+	],
+	["고객지원","고객지원","/","10",
+			[
+				["공지사항","support","/www/board/notice/list.do","10"],
+				["Q&A","support","/www/board/qna/list.do","10"],
+				["FAQ","support","/www/board/faq/list.do","10"],
+				["자료실","support","/www/board/files/list.do","10"],
+				["자격증 진위확인","support","/www/anno/cert/check.do","10"]
+			]
+	],
+	["마이페이지","마이페이지","/www/mypage/accept/list.do","10",
+			[
+				["접수조회","mypage","/www/mypage/accept/list.do","10"],
+				["결과확인","mypage","/www/mypage/accept/result.do","10"],
+				["자격증 관리","mypage","/www/mypage/license/list.do","10"],
+				["배송현황","mypage","/www/mypage/license/deliverylist.do","10"],
+				["보수교육","mypage","/www/mypage/reedu/list.do","10"],
+				["회원정보 관리","mypage","/www/mypage/edit.do","10"],
+				["회원탈퇴","mypage","/www/mypage/leave.do","10"]
+			]
+	],
+	["회원가입","회원가입","/www/join/main.do","21",
+		[
+			["회원가입","Join","/www/join/main.do","21"]
+		]
+	],
+	["로그인","로그인","/accounts/www/login.do","22",
+		[
+			["로그인","Login","/www/accounts/login.do","22"],
+			["아이디 찾기","Login","/www/accounts/find/findid.do","22"],
+			["비밀번호 찾기","Login","/www/accounts/find/findpw.do","22"]
+		]
+	],
+
+	["이용안내","이용안내","/www/mypage/accept/list.do","20",
+			[
+				["개인정보처리방침","sub","/www/sub/readme/privacy.do","20"],
+				["이메일무단수집거부","sub","/www/sub/readme/email.do","20"],
+				["이용약관","sub","/www/sub/readme/use.do","20"]
+			]
+	],
+	["전문위원 신청","전문위원 신청","/","20",
+		[
+			["감독위원 신청","sub","/www/mypage/spv/req/req.do","20"],
+			["시험감독 신청","sub","/www/mypage/spv/req/req.do","20"],
+			["전문위원 신청","sub","/www/mypage/pcmit/req/req.do","20"]
+		]
+	]
+];
+
+// console.log(site_menu)
+

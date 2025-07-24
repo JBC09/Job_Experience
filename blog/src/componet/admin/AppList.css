@@ -1,0 +1,129 @@
+.nanumgothic * {
+  font-family: 'Nanum Gothic', sans-serif;
+ }
+ 
+#two *{
+
+  font-family: 'Nanum Gothic', sans-serif;
+}
+#two > #AppList{
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 30px 0px 0px;
+  padding-left: 30px;
+  overflow-x: hidden;
+  overflow-y: auto;
+} 
+
+#two .box{
+  float: left;
+  margin-right: 15px;
+  margin-bottom: 20px;
+  box-sizing: border-box;
+  width: 220px;
+  height: auto;
+  overflow: hidden;
+  padding: 0px 0px 15px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  position: relative;
+}
+
+ul{
+  font-size: 15px;
+  width: 80%;
+  overflow: hidden;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  flex-direction: column;
+  list-style: none;
+  transition: 0.35s linear;
+  margin-bottom: 0px;
+  opacity: 1;
+  height: 280px;
+  margin: 20px auto 10px;
+}
+ul li{
+  box-sizing: border-box;
+  width: 100%;
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+  font-size: 12px;
+  text-align: center;
+  border-bottom: 2px solid #eee;
+}
+ul li #blue{
+    color: white;
+    border-radius: 3px;
+    padding: 3px 5px;
+    background-color: steelblue;
+}
+ul li #red{
+  color: white;
+  border-radius: 3px;
+  padding: 3px 5px;
+  background-color: salmon;
+}
+#two .box:last-child{
+  margin-right: 0px;
+}
+
+#two img{
+  width: 20px;
+  height: 20px;
+  transition: 0.35s;
+  padding: 4px;
+  position: absolute;
+  color: #4682b4;
+  right: 4%;
+  top: 9px;
+  cursor: pointer;
+  
+ 
+}
+
+#two img:nth-of-type(2){
+  right: 19%;
+}
+#two img:nth-of-type(3){
+  right: 34%;
+}
+
+#two img:hover{
+  border-radius: 3px;
+  background-color: #ddd;
+  
+}
+
+
+
+#round{
+  width: 100%;
+  padding: 10px 15px;
+  box-sizing: border-box;
+  border-bottom: 2px solid #ddd;
+  font-weight: bold;
+  font-size: 15px;
+  margin-bottom: 15px;
+  line-height: 30px;
+}
+
+
+#click{
+  text-align: center;
+  width: 130px;
+  display: block;
+  margin: 0px auto;
+  font-size: 15px;
+  padding: 10px 15px;
+  border-radius: 30px;
+  border: 1px solid steelblue;
+  color: steelblue;
+  transition: 0.35s;
+}
+#click:hover{
+    background-color: steelblue;
+    color: white;
+} 

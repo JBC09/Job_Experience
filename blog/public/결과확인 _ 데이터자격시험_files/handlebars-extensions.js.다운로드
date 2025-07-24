@@ -1,0 +1,395 @@
+/**
+ * Handlebars registerHelpers
+ * @author : Saebyeok Lee
+ * @param $
+ */
+(function($){
+	Handlebars.registerHelper('ifCond', function (v1, operator, v2, options) {
+		switch (operator) {
+		case '==':
+			return (v1 == v2) ? options.fn(this) : options.inverse(this);
+		case '===':
+			return (v1 === v2) ? options.fn(this) : options.inverse(this);
+		case '!=':
+			return (v1 != v2) ? options.fn(this) : options.inverse(this);
+		case '<':
+			return (v1 < v2) ? options.fn(this) : options.inverse(this);
+		case '<=':
+			return (v1 <= v2) ? options.fn(this) : options.inverse(this);
+		case '>':
+			return (v1 > v2) ? options.fn(this) : options.inverse(this);
+		case '>=':
+			return (v1 >= v2) ? options.fn(this) : options.inverse(this);
+		case '&&':
+			return (v1 && v2) ? options.fn(this) : options.inverse(this);
+		case '||':
+			return (v1 || v2) ? options.fn(this) : options.inverse(this);
+		case 'indexOf':
+			if(v1 != undefined && v1 != ""){
+				return (v1.indexOf(v2) > -1) ? options.fn(this) : options.inverse(this);	
+			}else{
+				return options.inverse(this);
+			}
+		case 'in':
+			if(v1 instanceof Array){
+				var result = false;
+				for(var i=0;i<v1.length;i++){
+					if(v1[i] == v2){
+						result = true;
+						break;
+					}
+				}
+				return result ? options.fn(this) : options.inverse(this);
+			} else {
+				return (v1 == v2) ? options.fn(this) : options.inverse(this);
+			}
+		case 'prop':
+			return (v1[v2] !== undefined) ? options.fn(this) : options.inverse(this);
+		default:
+			return options.inverse(this);
+		}
+	});
+	Handlebars.registerHelper('ifCond2', function (test, options) {
+		return test ? options.fn(this) : options.inverse(this);
+	});
+	
+	// Helper 조건에 따라 값을 리턴함
+	Handlebars.registerHelper('if2', function(test, v1, v2) {
+		return test ? v1 : v2;
+	});
+	
+	Handlebars.registerHelper('ifIn', function(elem, list, options) {
+		if(list.indexOf(elem) > -1) {
+			return options.fn(this);
+		}
+		return options.inverse(this);
+	});
+
+	// Helper
+	Handlebars.registerHelper('eq', function(a, b, options) {
+		return a === b ? options.fn(this) : options.inverse(this);
+	});
+
+	// Helper
+	Handlebars.registerHelper('correntRate', function(hitcnt, svccnt, options) {
+		hitcnt = hitcnt || 0;
+		svccnt = svccnt || 1;
+		return ((hitcnt/svccnt) * 100).toFixed(1) + '%' ;
+	});
+
+	Handlebars.registerHelper("math", function(lvalue, operator, rvalue, options) {
+		lvalue = parseFloat(lvalue);
+		rvalue = parseFloat(rvalue);
+
+		return {
+			"+": lvalue + rvalue,
+			"-": lvalue - rvalue,
+			"*": lvalue * rvalue,
+			"/": lvalue / rvalue,
+			"%": lvalue % rvalue
+		}[operator];
+	});
+	
+	// Helper 조건식의 참, 거짓을 반환함.
+	Handlebars.registerHelper('test', function(v1, operator, v2) {
+		switch (operator) {
+		case '==':
+			return (v1 == v2);
+		case '===':
+			return (v1 === v2);
+		case '!=':
+			return (v1 != v2);
+		case '<':
+			return (v1 < v2);
+		case '<=':
+			return (v1 <= v2);
+		case '>':
+			return (v1 > v2);
+		case '>=':
+			return (v1 >= v2);
+		case '&&':
+			return (v1 && v2);
+		case '||':
+			return (v1 || v2);
+		case 'indexOf':
+			if(v1 != null && v1 != ""){
+				return (v1.indexOf(v2) > -1);	
+			}else{
+				return false;
+			}
+		case 'in':
+			if(v1  instanceof Array){
+				var result = false;
+				for(var i=0;i<v1.length;i++){
+					if(v1[i] == v2){
+						result = true;
+						break;
+					}
+				}
+				return result;
+			} else {
+				return (v1 == v2);
+			}
+		case 'prop':
+			return (v1[v2] !== undefined) ? options.fn(this) : options.inverse(this);
+		default:
+			return false;
+		}
+	});
+
+	Handlebars.registerHelper('nl2br', function (text, isXhtml) {
+		var breakTag = (isXhtml || typeof isXhtml === 'undefined') ? '<br />' : '<br>';
+		return (text + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1' + breakTag + '$2');
+	});
+
+	Handlebars.registerHelper('dateformat', function (value, type) {
+		if (!value || value.length < 8) return '';
+		value = value.replace(/-/gi, '');
+		switch(type) {
+			case 1:
+				return value.substring(0,4) + "년 " + value.substring(4,6) + "월 " ;
+				break;
+			case 2: //MM.DD
+				return value.substring(4,6) + "." + value.substring(6,8);
+				break;
+			case 3: //MM.DD
+				return value.substring(4,6) + "월 " + value.substring(6,8) + "일";
+				break;
+			case 4:
+				return value.substring(0,4) + "년 " + value.substring(4,6) + "월 " + value.substring(6,8) + "일";
+				break;
+			case 5:
+				return value.substring(0,4) + "." + value.substring(4,6) + "." + value.substring(6,8) + ' '+value.substring(8,10) + ':' + value.substring(10, 12);
+				break;
+			case 6:
+				return value.substring(0,4);
+				break;
+			case 0:
+			default:
+				return value.substring(0,4) + "." + value.substring(4,6) + "." + value.substring(6,8);
+		}
+	});
+	
+	Handlebars.registerHelper('timeformat', function (value, type) {
+		if (!value || value.length < 6) return '';
+		value = value.replace(/-/gi, '');
+		switch(type) {
+			case 0:
+			default:
+				return value.substring(0,2) + ":" + value.substring(2,4) + ":" + value.substring(4,6);
+		}
+	});
+
+	Handlebars.registerHelper('getComma', function (value, type) {
+		var str = "";
+		if(value != undefined && value != null){
+			str = value.toString();
+		}
+		if(str.length < 3){
+			return str;
+		} else {
+			return str.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+		}
+	});
+
+	Handlebars.registerHelper('getRownumber', function(idx, totcnt) {
+		var totcnt = Number(totcnt) || 0 ;
+		var idx = Number(idx) || 0 ;
+
+		return (totcnt - idx) + 1;
+	});
+
+	Handlebars.registerHelper('nodata', function(list, options) {
+		return list.length == 0 ? options.fn(this) : options.inverse(this);
+	});
+
+	// 문자열에 구분자를 이용하여 특정위치 값을 리턴함.
+	Handlebars.registerHelper('splitValue', function(str, delimiter, pos) {
+	  var arr = [];
+	  if(str != undefined && str != null && str != ""){ arr = str.split(delimiter); }
+	  return arr.length >= (pos-1) ? arr[pos-1] : ""; 
+	});
+
+	// each 확장(first, last, num, length) by LSB
+	Handlebars.registerHelper("foreach",function(arr,options) {
+		if(options.inverse && !arr.length)
+			return options.inverse(this);
+
+		return arr.map(function(item,index) {
+			item.$index = index;
+			item.$num = index + 1;
+			item.$length = arr.length;
+			item.$first = index === 0;
+			item.$last  = index === arr.length-1;
+			return options.fn(item);
+		}).join('');
+	});
+
+	// for
+	Handlebars.registerHelper('for', function(from, to, incr, block) {
+		var accum = '';
+		from = Number(from);
+		to = Number(to);
+		incr = Number(incr);
+		if(incr > 0){
+			for(var i = from; i <= to; i += incr)
+				accum += block.fn(i);
+		} else {
+			for(var i = from; i >= to; i += incr)
+				accum += block.fn(i);
+		}
+		return accum;
+	});
+
+	// 분류 전용 필터.
+	Handlebars.registerHelper('classListFilter', function (list, classa, depth) {
+		if(classa == undefined || classa.indexOf("-") == -1){
+			return list;
+		}
+		var tm_classObj = webUtil.getClassObj(classa);
+		var classObj = {depth : depth};
+		for(var i=1;i<depth;i++){
+			classObj["class" + i] = tm_classObj["class" + i];
+		}
+		var tm_list = webUtil.searchFilter(list, classObj);
+		return tm_list;
+	});
+	Handlebars.registerHelper('classListFilterLength', function (list, classa, depth) {
+		var tm_classObj = webUtil.getClassObj(classa);
+		var classObj = {depth : depth};
+		for(var i=1;i<depth;i++){
+			classObj["class" + i] = tm_classObj["class" + i];
+		}
+		var tm_list = webUtil.searchFilter(list, classObj);
+		return tm_list.length;
+	});
+	// 분류 셀렉터(원본과 대상의 class1부터 depth 까지 비교하여 같은지를 리턴함.
+	Handlebars.registerHelper('classSelector', function (orgObj, tarObj, depth) {
+		var checkCnt = 0;
+		for(var i=1; i<=depth;i++){
+			if(orgObj["class" + i] == tarObj["class" + i]){
+				checkCnt++;
+			} else {
+				break;
+			}
+		}
+		return checkCnt == depth;
+	});
+	
+	// 상위 객체의 값가지고 오기
+	Handlebars.registerHelper('getObjVal', function (obj, fastkey, lastkey) {
+		var val = "";
+		if(obj != undefined && obj != ""){
+			var key = fastkey + lastkey;
+			val = obj[key] || "";
+		}
+		return val;
+	});
+	
+	// 파일명만 추출.
+	Handlebars.registerHelper('gatFileNm', function(filePath) {
+		var fileNm = filePath || "";
+		filePath = filePath || "";
+		if(filePath.length > 0 && filePath.indexOf("/") > -1){
+			fileNm = filePath.substr(filePath.lastIndexOf("/") + 1);
+		}
+		return fileNm;
+	});
+
+	// substr
+	Handlebars.registerHelper('substr', function(str, startIdx, length) {
+		return str.substr(startIdx, length);
+	});
+	
+	// 핸드폰 번호를 구분자 포함하여 출력.
+	Handlebars.registerHelper('getPhpno', function(phpno, separator) {
+		var tmStr = "";
+		phpno = phpno || "";
+		separator = separator || "";
+		if(phpno.length < 10) {
+			tmStr = phpno;
+		} else if(phpno.length < 10) {
+			tmStr = phpno.substr(0, 3) + separator + phpno.substr(3, 4) + separator + phpno.substr(7, 4);
+		} else {
+			tmStr = phpno.substr(0, 3) + separator + phpno.substr(3, 3) + separator + phpno.substr(6, 4);
+		}
+		return tmStr;
+	});
+	
+	
+	// KDATA_PS 2021-01-25 Created by BHS fn_Comm_Format_Date
+	// only string data type version
+	Handlebars.registerHelper('fn_Comm_Format_Date', function(in_StringType, in_WeekNMYN) {
+		
+		var vDateTime = '';
+		var vDayOfWeek = '';
+		var tmpDate = new Date();
+		if ( in_StringType != undefined && in_StringType != '') {
+			var tmpStringType = in_StringType.replace(/[^0-9]/g, '');
+			if(tmpStringType.length >= 8 ) {
+				vDateTime = tmpStringType.substring(0, 4) + "." + tmpStringType.substring(4,6) + "." + tmpStringType.substring(6,8);
+			}	
+		} else {
+			return "";
+		}
+		if(in_WeekNMYN === 'Y') {
+			var week_arr = new Array('(일)', '(월)', '(화)', '(수)', '(목)', '(금)', '(토)');
+			var week_day = new Date(tmpStringType.substring(0, 4) + "-" + tmpStringType.substring(4,6) + "-" + tmpStringType.substring(6,8)).getDay();
+			vDayOfWeek = week_arr[week_day];
+		}
+		
+		return vDateTime + vDayOfWeek;
+	});
+	
+	// KDATA_PS 2021-01-25 Created by BHS fn_Comm_Format_DateTime
+	// only string data type version
+	Handlebars.registerHelper('fn_Comm_Format_DateTime', function(in_StringType, in_WeekNMYN) {
+		var vDateTime1 = '';
+		var vDateTime2 = '';
+		var vDayOfWeek = '';
+		var tmpDate = new Date();
+		if ( in_StringType != undefined && in_StringType != '') {
+			var tmpStringType = in_StringType.replace(/[^0-9]/g, '').trim();
+			if(tmpStringType.length >= 14 ) {
+				if(tmpDate.getFullYear() == tmpStringType.substring(0, 4)){
+					vDateTime1 = tmpStringType.substring(4,6) + "." + tmpStringType.substring(6,8) ;
+				} else {
+					vDateTime1 = tmpStringType.substring(0, 4) + "." + tmpStringType.substring(4,6) + "." + tmpStringType.substring(6,8) ;
+				}
+				vDateTime2 = tmpStringType.substring(8, 10) + ":" + tmpStringType.substring(10, 12) ;
+			}	
+		} else {
+			return "";
+		}
+		if(in_WeekNMYN === 'Y') {
+			var week_arr = new Array('(일)', '(월)', '(화)', '(수)', '(목)', '(금)', '(토)');
+			var week_day = new Date(tmpStringType.substring(0, 4) + "-" + tmpStringType.substring(4,6) + "-" + tmpStringType.substring(6,8)).getDay();
+			vDayOfWeek = week_arr[week_day];
+		}
+		
+		return vDateTime1 + vDayOfWeek + " " + vDateTime2;
+	});
+	
+	// KDATA_PS 2021-01-25 Created by BHS fn_Comm_Format_Time
+	// only string data type version
+	Handlebars.registerHelper('fn_Comm_Format_Time', function(in_StringType) {
+
+		var vDateTime = '';
+
+		var tmpDate = new Date();
+		if ( in_StringType != undefined && in_StringType != '') {
+			var tmpStringType = in_StringType.replace(/[^0-9]/g, '').trim();
+			if(tmpStringType.length >= 6 ) {
+				if(tmpStringType.length() >= 6 ) {					
+					var tmp_time = tmpStringType.substring(tmpStringType.length() - 6, tmpStringType.length());
+					vDateTime = tmp_time.substring(0, 2) + ":" + tmp_time.substring(2, 4) + ":" + tmp_time.substring(4, 6);
+				}	
+			}	
+		} else {
+			return "";
+		}
+		return vDateTime;
+	});
+	
+	
+})(jQuery);

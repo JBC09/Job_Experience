@@ -1,0 +1,65 @@
+@font-face {
+ font-family: 'nsk_t';
+ font-weight: 100;
+ src: url(NotoSansKR-Thin.eot);
+ src: url(NotoSansKR-Thin.eot?#iefix) format('embedded-opentype'),
+      url(NotoSansKR-Thin.woff2) format('woff2'),
+      url(NotoSansKR-Thin.woff) format('woff'),
+      url(NotoSansKR-Thin.otf) format('opentype');
+}
+
+@font-face {
+    font-family: 'nsk_l';
+    font-weight:300;
+    src: url(NotoSansKR-Light.eot);
+    src: url(NotoSansKR-Light.eot?#iefix) format('embedded-opentype'), 
+        url(NotoSansKR-Light.woff2) format('woff2'), 
+        url(NotoSansKR-Light.woff) format('woff'), 
+        url(NotoSansKR-Light.oft) format('opentype');
+}
+
+@font-face {
+ font-family: 'nsk_dl';
+ font-weight: 350;
+ src: url(NotoSansKR-DemiLight.eot);
+ src: url(NotoSansKR-DemiLight.eot?#iefix) format('embedded-opentype'),
+     url(NotoSansKR-DemiLight.woff2) format('woff2'),
+      url(NotoSansKR-DemiLight.woff) format('woff'),
+      url(NotoSansKR-DemiLight.oft) format('opentype');
+}
+@font-face {
+ font-family: 'nsk_r';
+ font-weight: 400;
+ src: url(NotoSansKR-Regular.eot);
+ src: url(NotoSansKR-Regular.eot?#iefix) format('embedded-opentype'),
+      url(NotoSansKR-Regular.woff2) format('woff2'),
+      url(NotoSansKR-Regular.woff) format('woff'),
+      url(NotoSansKR-Regular.oft) format('opentype');
+}
+@font-face {
+ font-family: 'nsk_m';
+ font-weight: 500;
+ src: url(NotoSansKR-Medium.eot);
+ src: url(NotoSansKR-Medium.eot?#iefix) format('embedded-opentype'),
+     url(NotoSansKR-Medium.woff2) format('woff2'),
+      url(NotoSansKR-Medium.woff) format('woff'),
+      url(NotoSansKR-Medium.oft) format('opentype');
+}
+@font-face {
+ font-family: 'nsk_b';
+ font-weight: 700;
+ src: url(NotoSansKR-Bold.eot);
+ src: url(NotoSansKR-Bold.eot?#iefix) format('embedded-opentype'),
+      url(NotoSansKR-Bold.woff2) format('woff2'),
+      url(NotoSansKR-Bold.woff) format('woff'),
+      url(NotoSansKR-Bold.oft) format('opentype');
+}
+@font-face {
+ font-family: 'nsk_eb';
+ font-weight: 900;
+ src: url(NotoSansKR-Black.eot);
+ src: url(NotoSansKR-Black.eot?#iefix) format('embedded-opentype'),
+     url(NotoSansKR-Black.woff2) format('woff2'),
+      url(NotoSansKR-Black.woff) format('woff'),
+      url(NotoSansKR-Black.oft) format('opentype');
+}

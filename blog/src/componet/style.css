@@ -1,0 +1,89 @@
+*{
+    margin: 0;
+    padding: 0;
+
+}
+.main{
+    width: 1000px;
+    
+}
+
+
+body{
+    background-color: #f4f4f4;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+span{
+    color:crimson;
+}
+.in{
+    position: relative;
+    margin-top: 20px;
+    margin-bottom: 25px;
+}
+.in i{
+    font-size: 18px;
+    position: absolute;
+    top: 50%;
+    left: 1.5%;
+    transform: translate(0,-50%)
+}
+.in input{
+    font-size: 15px;
+    padding: 15px;
+    width: 800px;
+    outline: none;
+    border: none;
+    padding-left: 45px;
+    transition: 0.35s;
+}
+.in input::placeholder{
+    color: gray;
+    font-style: italic;
+}
+section{
+    width: 100%;
+    display: flex;
+}
+h4{
+
+    background-color: #e4e4e4;
+    border-left: 1px solid darkgray;
+    padding: 5px 20px;
+    font-weight: 400;
+    cursor: pointer;
+}
+.in input:focus{
+    box-shadow: 0px 5px 0px crimson;
+}
+i{
+    float: left;
+    font-size: 320px;
+    margin-right: 20px;
+}
+h4.active{
+    background-color: white;
+    color: crimson;
+    border: none;
+    border-top: 3px solid crimson;
+    font-weight: bold;
+}
+.tabs div{
+    display: none;
+}
+.tabs h1{
+    margin-bottom: 30px;
+}
+.tabs div.active{
+    padding: 30px;
+    text-align: center;
+    background-color: white;
+    display: block;
+}
+
+.신청_link{
+    color: white;
+}

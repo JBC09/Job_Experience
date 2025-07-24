@@ -1,0 +1,331 @@
+@font-face {
+@import url(//fonts.googleapis.com/earlyaccess/nanumgothic.css);
+
+ font-family: 'Nanum Gothic', sans-serif;
+}
+
+#form{  
+
+  text-align: center;
+  margin: 0 auto;
+  padding-top: 150px;
+  padding-bottom: 150px;
+}
+
+
+form > table, form > table th, form > table td {
+  font-family: 'Nanum Gothic', sans-serif;
+    padding: 0;
+    border: 1px solid #ddd;
+    border-spacing: 0px;
+    border-collapse: collapse;
+}
+
+form table {
+  margin: 0 auto;
+  height: 500px;
+  border: 1px solid #ddd;
+  border-top: 2px solid #1a75c6;
+}
+form > table:nth-of-type(1):nth-of-type(1){
+  margin-top: 40px;
+  margin-bottom: 80px;
+}
+
+
+form table th{
+  padding: 20px 0px;
+  width: 350px;
+  color: #444;
+  box-sizing: border-box;
+  background: #f3f3f3;
+}
+form > table th p{
+  font-size: 12px;
+  color: #666;
+}
+input[type="text"]{
+    padding: 7px;
+    padding-left: 12px;
+    width: 200px;
+    height: 20px;
+    border: 1px solid #ccc;
+    border-radius: 1px;
+    outline: none;
+}
+#show{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 0px;
+  box-sizing: border-box;
+  justify-content: space-around;
+  height: 170px;
+}
+td{
+  box-sizing: border-box;
+  width: 530px;
+}
+#grade_flex{
+  box-sizing: border-box;
+  height: 100%;
+  padding: 0px 80px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+ 
+}
+label{
+  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+input[type="radio"] {
+    margin-top: -3px;
+    margin-left: 7px;
+    transform: scale(1.4);
+}
+#경로check input[type="radio"]{
+  margin-right: 10px;
+  margin-top: 3px;
+  transform: scale(2);
+}
+.진학{
+  padding: 20px 40px;
+  height: 100px;
+}
+#경로check{
+  padding: 10px 0px;
+  padding-left: 130px;
+  height: 180px;
+  display: flex;
+
+  align-items: baseline;
+  justify-content: space-around;
+  flex-direction: column;
+}
+
+#member{
+  display: flex;
+  padding: 0px 80px;
+  align-items: center;
+  justify-content: space-around;
+
+  height: 100px;
+}
+#member input[type="radio"] {
+
+  margin-right: 5px;
+  transform: scale(1.4);
+}
+#info{
+  padding: 25px;
+  text-align: left;
+  height: 210px;
+}
+#info p{
+  margin-bottom: 20px;
+  font-size: 12px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #777;
+}
+#info label{
+  justify-content: unset;
+  margin-left: 70px;
+}
+#info input[type="radio"]{
+  margin-top: 0px;
+  margin-right: 7px;
+}
+#btn_div{
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  margin: 0 auto;
+  width: 300px;
+  margin-top: 30px;
+}
+.btn1{
+  cursor: pointer;
+  font-size: 20px;
+  padding: 10px 15px;
+  border: none;
+  color: steelblue;
+  background-color: white;
+  border-radius: 3px;
+  transition: 0.35s;
+  box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.3);
+}
+.btn1:hover{
+  filter: brightness(1.2);
+}
+.btn2:hover{
+  filter: brightness(1.2);
+}
+.btn2{
+  transition: 0.35s;
+  cursor: pointer;
+  border-radius: 3px;
+  font-size: 20px;
+  padding: 10px 15px;
+  border: none;
+  color: white;
+  background-color: steelblue;
+}
+
+select{
+  border: 1px solid #ddd;
+  outline: none;
+  padding: 5px;
+  font-size: 15px;
+  margin-right: 5px;
+}
+
+
+textarea{
+  padding: 10px;
+  box-sizing: border-box;
+  resize: none;
+  margin: 10px;
+}
+@media screen and (max-width: 900px) {
+    #form{
+      transform: scale(0.9);
+    }
+    #form > h1{
+      font-size: 25px;
+    }
+}
+@media screen and (max-width: 500px) {
+
+  #form > h1{
+    font-size: 50px;
+  }
+  #form{
+    transform: scale(1);
+    padding-bottom: 50px;
+    margin: 0px auto;
+    width: 95%;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  
+  } 
+  #form table {
+    width: 80%;
+    box-sizing: border-box;
+    position: relative;
+;
+  }
+
+  
+  
+  td{
+    display: flex;
+    width: 300px;
+    align-items: center;
+    justify-content: center;
+  }
+  td input{    
+    font-size: 15px;
+    height: 100%;
+  }
+  #form{
+ 
+    margin: 0 auto;
+  }
+  form table th{
+    padding: 20px 0px;
+    width: 100%;
+    color: #444;
+    box-sizing: border-box;
+    background: #f3f3f3;
+  }
+  table tr{
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-bottom: 40px;
+    box-sizing: border-box;
+  }
+  table tr:last-child{
+    margin-bottom: 0px;
+  }
+  td input{
+    
+    height: 100px;
+  }
+
+  #member{
+    padding: 0px 20px;
+  }
+  input[type="radio"] {
+    margin-left: 5px;
+  }
+  input[type="text"]{
+    width: 100%;
+  }
+
+  #form > h1{
+    width: 100%;
+    font-size: 14px;
+    text-align: center;
+  }
+  #info{
+    margin-bottom: 50px;
+  }
+  body{
+    height: 100vh;
+  }
+
+  .진학{
+    padding: 20px;
+    height: 100%;
+  }
+  #grade_flex{
+    display: flex;
+    align-items: center;
+    width: 300px;
+    box-sizing: border-box;
+    height: 100%;
+    padding: 0px 20px;
+    padding-top: 40px;
+    
+    border: 2px solid transparent;
+  }
+  
+  #grade_flex label{
+    padding: 0px;
+    margin-top: -20px;
+  }
+  .진학 #grade_flex label:nth-of-type(3){
+    margin-top: -40px;
+  }
+  #grade_flex label:nth-of-type(4){
+    margin-top: -40px;
+  }
+
+  #경로check label{
+    height: 10px;
+    padding: 0px;
+  }
+
+  #경로check input[type="radio"] {
+    margin-right: 10px;
+    margin-top: 3px;
+    width: 25px;
+    transform: scale(1);
+}
+  #경로check{
+    padding: 10px 0px;
+    height: 250px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-around;
+    flex-wrap: wrap;
+  }
+}

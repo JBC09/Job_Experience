@@ -1,0 +1,460 @@
+/**
+ * IOSYS SiteFunction
+ * 사이트 디파인 함수.
+ **/
+'use strict';
+var SiteFunction = function() {
+}
+var siteFn = new SiteFunction();
+
+/**
+ * 화면 스크롤 변경에 따른 탑버튼 처리
+ */
+SiteFunction.prototype.fnLoadTopBtn = function(){
+	//Check to see if the window is top if not then display button
+	$(window).scroll(function(){
+		if ($(this).scrollTop() > 100) {
+			$('.scroll_top').fadeIn();
+		} else {
+			$('.scroll_top').fadeOut();
+		}
+	});
+
+  $(".io-fn-btnTop").click(function() {
+	  $("html, body").animate({
+		   scrollTop: 0
+	  }, 500);
+	  return false;
+	});
+
+	//div_wrapper 좌표값을 구하여 btn_top 버튼을 우측하단에 위치
+	//var w_position = $(".div_wrapper_1024");
+	//var offset = w_position.offset();
+	//$('.btn_top').css('left', offset.left+1034+'px');
+};
+$(document).ready(function(){
+	if(typeof siteGb != "undefined" && siteGb == "home" ){
+		// 메뉴 show/hide
+		$(".mn li ul").css("margin-top","-9999px");
+		$(".mn li ul").hide();
+	
+		$(".mn li a").mouseenter(function() {
+			$(".mn li ul").css("margin-top","0");
+			$(".mn li ul").slideDown(190);
+		});
+	
+		$(".mn").mouseleave(function() {
+			$(".mn li ul").css("margin-top","0");
+			$(".mn li ul").stop(true, true).slideUp(0);
+		});
+	
+		$(".mn a").click(function() {
+			$(".mn li ul").css("margin-top","0");
+			$(".mn li ul").stop(true, true).slideUp(0);
+		});
+	
+		$(".mn").focusin(function() {
+			$(".mn li ul").css("margin-top","0");
+			$(".mn li ul").slideDown(190);
+		});
+	
+		$(".mn li ul li:last").focusout(function() {
+			$(".mn li ul").css("margin-top","0");
+			$(".mn li ul").stop(true, true).slideUp(0);
+		});
+	
+		$('.smn').mouseenter(function() {
+			$('.smn ul').css('background', 'none');
+			$('#' + this.id + '  ul').css('background', 'white');
+		});
+	
+		$("#smn_1, smenu_ul").mouseover(function() {
+			$(".smenu_img").css('background','none')
+		});
+	
+		$("#smn_2").mouseover(function() {
+			$(".smenu_img").css('background-image','url(' + contextRoot + '/images/default/smenu_01.png)')
+		});
+	
+		$("#smn_3").mouseover(function() {
+			$(".smenu_img").css('background-image','url(' + contextRoot + '/images/default/smenu_02.png)')
+		});
+	
+		$("#smn_4").mouseover(function() {
+			$(".smenu_img").css('background-image','url(' + contextRoot + '/images/default/smenu_03.png)')
+		});
+	
+		$("#smn_5").mouseover(function() {
+			$(".smenu_img").css('background-image','url(' + contextRoot + '/images/default/smenu_04.png)')
+		});
+	
+		$("#smn_6").mouseover(function() {
+			$(".smenu_img").css('background-image','url(' + contextRoot + '/images/default/smenu_05.png)')
+		});
+		// 푸터에 뉴스레터 가입.
+		try{$('#newsletter .email_type').selectize();} catch (e) {}
+		
+		try{$('.div-box').matchHeight();} catch (e) {}
+		//assigning css style for light color
+		$('.lebelinput').addClass('lightcolor');
+		// clearing input on focus
+		$('.lebelinput').on('focus', function(){
+			if($(this).val()==$(this).attr('title'))
+			{
+				$(this).val('').removeClass('lightcolor');
+			}
+		});
+		//restoring input value on blrr if the input is left blank
+		$('.lebelinput').on('blur', function(){
+			if($(this).val()=='')
+			{
+				var inputtitle=$(this).attr('title');
+				$(this).val(inputtitle).addClass('lightcolor');
+			}
+		});
+		
+		$('#formNewsLetter').on('click', function() {
+			
+			var agency = $('#newsletter .email_type').val();			
+			var email = $('#newsletter .email_address').val();
+			var usernm = $('#newsletter .email_name').val();
+			
+			if(agency == null || typeof agency == 'undefined' || agency == ""){
+				alert("소속을 선택해 주세요.");
+				return;
+			}
+			
+			if(email == null || typeof email == 'undefined'|| email == "이메일"){				
+				alert("이메일을 입력해 주세요.");
+				return;
+			}
+			
+			if(usernm == null || typeof usernm == 'undefined'|| usernm == "이름"){
+				alert("이름을 입력해 주세요.");
+				return;
+			}
+			
+			if(!siteFn.validateEmail(email)){
+				alert("정확한 이메일을 입력해 주세요.");
+				return;
+			}
+			
+			$.rest.url(contextRoot + '/newsLetter/insertSubscbr.dox').post({
+				param : {"agency":agency, "email":email, "usernm":usernm},
+				success : function(data, status){
+					if(data.result == "success"){
+						alert("뉴스레터 구독 신청을 완료 했습니다.");
+					}else{
+						alert(data.message);
+					}
+				},
+				error: function (jqXHR, status) {
+					console.log(data.message);
+				}
+			});
+		});
+	}
+});
+
+SiteFunction.prototype.validateEmail = function(email) {
+  var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return re.test(email);
+};	
+/**
+ * email 발송
+ type -> "EXAMNM"(응시자목록), "SUPER"(감독관목록)
+ list(응시자) -> "loginid", "name", "birth", "genderNm", "email", "cellphone", "agency", "idvdorgngbNm", "apyexamno"
+ list(감독관) -> "supervisoridUsernm", "examhallAreanm", "examhallnm", "examroomnm", "supervisorgbNm", "agency", "email", "supervisoridPhnno1"
+ emailgb / smsgb -> 기본 발송 구분.
+ siteFn.openSendEmail("EXAMNE", 1, [  { loginid : "아아디1", name : "이름1", birth : "생일1", genderNm : "성별1", email : "이메일1", cellphone : "핸드폰번호1", agency : "소속1", idvdorgngbNm : "개인구분1", apyexamno : "수험번호1"}, { loginid : "아아디2", name : "이름2", birth : "생일2", genderNm : "성별2", email : "이메일2", cellphone : "핸드폰번호2", agency : "소속2", idvdorgngbNm : "개인구분2", apyexamno : "수험번호2"}, { loginid : "아아디3", name : "이름3", birth : "생일3", genderNm : "성별3", email : "이메일3", cellphone : "핸드폰번호3", agency : "소속3", idvdorgngbNm : "개인구분3", apyexamno : "수험번호3"}, { loginid : "아아디4", name : "이름4", birth : "생일4", genderNm : "성별4", email : "이메일4", cellphone : "핸드폰번호4", agency : "소속4", idvdorgngbNm : "개인구분4", apyexamno : "수험번호4"}, { loginid : "아아디5", name : "이름5", birth : "생일5", genderNm : "성별5", email : "이메일5", cellphone : "핸드폰번호5", agency : "소속5", idvdorgngbNm : "개인구분5", apyexamno : "수험번호5"}, { loginid : "아아디6", name : "이름6", birth : "생일6", genderNm : "성별6", email : "이메일6", cellphone : "핸드폰번호6", agency : "소속6", idvdorgngbNm : "개인구분6", apyexamno : "수험번호6"}]);
+ 
+ */
+SiteFunction.prototype.openSendEmail = function(type, examoprSeq, list, emailgb) {
+	var url = contextRoot + "/components/email/send.do";
+	var paramsMap = { p : {type : type, examoprSeq : examoprSeq, list:list, emailgb : (emailgb||"")} };
+	webUtil.windowOpen(url, paramsMap, {scrollbars : 'yes', width: 1400, height : 800, resize : "yes"});
+};
+/**
+ * 알림톡발송 ( IF 는 openSendEmail 과 같음)
+ siteFn.openSendSms("EXAMNE", 1, [  { loginid : "아아디1", name : "이름1", birth : "생일1", genderNm : "성별1", email : "이메일1", cellphone : "핸드폰번호1", agency : "소속1", idvdorgngbNm : "개인구분1", apyexamno : "수험번호1"}, { loginid : "아아디2", name : "이름2", birth : "생일2", genderNm : "성별2", email : "이메일2", cellphone : "핸드폰번호2", agency : "소속2", idvdorgngbNm : "개인구분2", apyexamno : "수험번호2"}, { loginid : "아아디3", name : "이름3", birth : "생일3", genderNm : "성별3", email : "이메일3", cellphone : "핸드폰번호3", agency : "소속3", idvdorgngbNm : "개인구분3", apyexamno : "수험번호3"}, { loginid : "아아디4", name : "이름4", birth : "생일4", genderNm : "성별4", email : "이메일4", cellphone : "핸드폰번호4", agency : "소속4", idvdorgngbNm : "개인구분4", apyexamno : "수험번호4"}, { loginid : "아아디5", name : "이름5", birth : "생일5", genderNm : "성별5", email : "이메일5", cellphone : "핸드폰번호5", agency : "소속5", idvdorgngbNm : "개인구분5", apyexamno : "수험번호5"}, { loginid : "아아디6", name : "이름6", birth : "생일6", genderNm : "성별6", email : "이메일6", cellphone : "핸드폰번호6", agency : "소속6", idvdorgngbNm : "개인구분6", apyexamno : "수험번호6"}]);
+ */
+SiteFunction.prototype.openSendSms = function(type, examoprSeq, list, idvdorgngb, smsgb) {
+	var url = contextRoot + "/components/sms/send.do";
+	var paramsMap = { p : {type : type, examoprSeq : examoprSeq, list:list, idvdorgngb:idvdorgngb, smsgb : (smsgb || "")} };
+	webUtil.windowOpen(url, paramsMap, {scrollbars : 'yes', width: 1200, height : 800, resize : "yes"});
+};
+/**
+ * 회원정보 보기 팝업(aply가 있으면 접수정보를 출력함. orgnSeq는 그룹정보조회함.);
+ * paramsMap = {aplySeq, orgnSeq, userid };
+ * siteFn.openUserInfo({aplySeq : 1, userid : "C0001", orgnSeq : 1}); 1개의 파라메타만 넣어도 됨.
+ */
+SiteFunction.prototype.openUserInfo = function(paramsMap) {
+	console.log(paramsMap);
+	var url = contextRoot + "/member/info.do";
+	webUtil.windowOpen(url, paramsMap, {scrollbars : 'yes', width: 1000, height : 800, resize : "yes"});
+};
+/**
+ * 응시 확인서 보기
+ * paramsMap = {aplySeq};
+ * siteFn.openCertIssu({aplySeq : 1});
+ */
+SiteFunction.prototype.openCertIssu = function(paramsMap) {
+	var url = contextRoot + "/components/view/exam.do";
+	webUtil.windowOpen(url, paramsMap, {scrollbars : 'no', width: 1024, resize : "yes"});
+};
+/**
+ * 필기 합격서 보기(2023-01-02)
+ * paramsMap = {aplySeq};
+ * siteFn.openPgPass({aplySeq : 1});
+ */
+SiteFunction.prototype.openPgPass = function(paramsMap) {
+	var url = contextRoot + "/components/view/pgpass.do";
+	webUtil.windowOpen(url, paramsMap, {scrollbars : 'no', width: 1024, resize : "yes"});
+};
+/**
+ * 성적 인증서 보기
+ * paramsMap = {aplySeq};
+ * siteFn.openCertIssu({aplySeq : 1});
+ */
+SiteFunction.prototype.openCertScore = function(paramsMap) {
+	var url = contextRoot + "/components/view/score.do";
+	webUtil.windowOpen(url, paramsMap, {scrollbars : 'no', width: 1024, resize : "yes"});
+};
+/**
+ * 성적 인증서 보기 (관리자 전용)
+ * paramsMap = {aplySeq};
+ * siteFn.openCertIssu({aplySeq : 1});
+ */
+SiteFunction.prototype.openCertScoreManager = function(paramsMap) {
+	var url = contextRoot + "/components/view/score.do";
+	webUtil.windowOpen(url, paramsMap, {scrollbars : 'no', width: 1024, resize : "yes"});
+};
+/**
+ * 성적 점수보기(우선순위 : scorelicenseDocno, aplySecurekey, aplySeq)
+ * paramsMap = {aplySeq, aplySecurekey, scorelicenseDocno};
+ * siteFn.openCertScoreView({aplySeq : 1, aplySecurekey : "abcd", scorelicenseDocno : "abcde-sdq2"});
+ */
+SiteFunction.prototype.openCertScoreView = function(paramsMap) {
+	var url = contextRoot + "/mypage/accept/score/view.do";
+	webUtil.windowOpen(url, paramsMap, {scrollbars : 'no', width: 1024, resize : "no"});
+};
+/**
+ * 고사장 수험번호 배정 우선순위 설정 창 팝업
+ */
+SiteFunction.prototype.openExamHallOrdering = function(examoprSeq) {
+	var url = contextRoot + "/examopr/examhall/ordering.do?examoprSeq="+examoprSeq;
+	return webUtil.windowOpen(url, "hall.ordering", {scrollbars : 'yes', width: 600, height : 700, resize : "yes"});
+};
+/**
+ * 엑셀 저장
+ * paramsMap = {p, f};
+ * needReason = true | false (엑셀 저장 사유 작성 필요)
+ * siteFn.saveExcel({ p : JSON.stringify($scope.searchOptions), f : "EXAMOPR_STATS_APLY_LIST"});
+ */
+SiteFunction.prototype.saveExcel = function(paramsMap, needReason) {
+	if (needReason && !paramsMap.p.reason) {
+		// 사유가 작성되지 않음
+		var url = contextRoot + "/common/export/excel/reason.do";
+		webUtil.windowOpen(url, paramsMap, {scrollbars : 'yes', width: 650, height: 440, resize : "no"});		
+	} else {
+		var url = contextRoot + "/common/export/excel.do";
+		var loadingBarKey = "load_" + webUtil.Date2Format(new Date(), "mmssSSS");
+		paramsMap.loadingBarKey = loadingBarKey;
+		webUtil.postCall(url, paramsMap, "_fileDownFrm");
+		webUtil.waitingLoadingBar(loadingBarKey, contextRoot + "/components/file/loading/check.dox");
+	}
+};
+/**
+ * 파일 다운로드
+ */
+SiteFunction.prototype.fileDownload = function(url, paramsMap) {
+	var loadingBarKey = "load_" + webUtil.Date2Format(new Date(), "mmssSSS");
+	paramsMap.loadingBarKey = loadingBarKey;
+	webUtil.waitingLoadingBar(loadingBarKey, contextRoot + "/components/file/loading/check.dox");
+	console.log(url, paramsMap);
+	webUtil.postCall(url, paramsMap, "_fileDownFrm");
+}
+/**
+ * 수험표
+ * paramsMap = {aplySecurekey};
+ * siteFn.openTestTaker({aplySecurekey : 1});
+ */
+SiteFunction.prototype.openTestTaker = function(paramsMap) {
+	var url = contextRoot + "/components/view/apyexamno.do";
+	webUtil.windowOpen(url, paramsMap, {scrollbars : 'no', width: 1024, resize : "yes"});
+};
+
+/**
+ * 수험표(임시)
+ * paramsMap = {aplySecurekey};
+ * siteFn.openTestTaker({aplySecurekey : 1});
+ */
+SiteFunction.prototype.openTestTakerNew = function(paramsMap) {
+	var url = contextRoot + "/components/view/apyexamnoNew.do";
+	webUtil.windowOpen(url, paramsMap, {scrollbars : 'no', width: 1024, resize : "yes"});
+};
+
+/**
+ * 접수확인서
+ * paramsMap = {aplySeq};
+ * siteFn.openTestTaker({aplySeq : 1});
+ */
+SiteFunction.prototype.openAplyReport = function(paramsMap) {
+	var url = contextRoot + "/components/view/aply.do";
+	webUtil.windowOpen(url, paramsMap, {scrollbars : 'no', width: 1024, resize : "yes"});
+};
+
+/**
+ * 다음멥.
+ * paramsMap = {latitude : 37.5749087006, longitude : 126.9735467689, maprt : 4, marker : "한국생산선본부", staticFlg : false};
+ * siteFn.apiDaumMap({latitude : 37.5749087006, longitude : 126.9735467689, maprt : 4, marker : "한국생산선본부", staticFlg : false});
+ */
+SiteFunction.prototype.apiDaumMap = function(id, paramsMap) {
+	console.log(paramsMap)
+	var lat = paramsMap.latitude || 37.5749087006;
+	var lng = paramsMap.longitude || 126.9735467689;
+	var level = Number(paramsMap.maprt) || 4;
+	var staticFlg = paramsMap.staticFlg || false;
+	var markerText = paramsMap.marker || "";
+	
+	var coords = new kakao.maps.LatLng(lat, lng);
+	var container = document.getElementById(id); //지도를 담을 영역의 DOM 레퍼런스
+	var marker = {position : coords, text:markerText};
+	var options = { //지도를 생성할 때 필요한 기본 옵션
+		center: coords //지도의 중심좌표.
+		, level: level //지도의 레벨(확대, 축소 정도, 숫자가 낮을수록 크게봄.)
+		, marker : marker
+	};
+	var resultMap = {};
+	if (staticFlg){
+		resultMap.map = new kakao.maps.StaticMap(container, options); //지도 생성 및 객체 리턴
+	} else {
+		resultMap.map = new kakao.maps.Map(container, options); //지도 생성 및 객체 리턴
+		resultMap.marker = new kakao.maps.Marker({
+			map: resultMap.map,
+			position: coords
+		});
+		if(markerText != undefined && markerText != "") {
+			var infowindow = new kakao.maps.InfoWindow({
+				content: '<div style="width:150px;text-align:center;padding:6px 0;">' + $scope.info.markerText + '</div>'
+			});
+			infowindow.open(resultMap.map, resultMap.marker);
+		}
+	}
+	return resultMap;
+};
+/**
+ * 메뉴링크 중 url이 없을경우 메시지 출력.
+ */
+SiteFunction.prototype.menuReady = function() {
+	alert("준비중입니다.");
+	return;
+};
+/**
+ * 메뉴링크 로그인이 필요한경우.
+ */
+SiteFunction.prototype.menuLogin = function() {
+	alert("로그인이 필요한 메뉴입니다.");
+	var url = contextRoot + "/accounts/login.do";
+	webUtil.postCall(url, {});
+	return;
+};
+SiteFunction.prototype.menuAppay = function() {
+	alert("시험접수 기간이 아닙니다.");
+	return;
+};
+SiteFunction.prototype.fnJoin = function() {
+	//alert("회원가입 기간이 아닙니다.");
+	var url = contextRoot + "/join/main.do";
+	webUtil.postCall(url, {});
+	return;
+};
+
+/**
+ * 본인인증 - 아이핀
+ * siteFn.apiOknameIPIN({})
+ */
+SiteFunction.prototype.apiOknameIPIN = function(paramsMap) {
+	var url = contextRoot + "/components/okname/ipin.do";
+	webUtil.windowOpen(url, paramsMap, {scrollbars : 'yes', width: 450, height:550, resize : "yes"});
+};
+
+/**
+ * 본인인증 - 모바일
+ * siteFn.apiOknameCELLPHONE({})
+ */
+SiteFunction.prototype.apiOknameCELLPHONE = function(paramsMap) {
+	var url = contextRoot + "/components/okname/cellphone.do";
+	webUtil.windowOpen(url, paramsMap, {scrollbars : 'yes', width: 430, height:630, resize : "yes"});
+};
+
+/**
+ * 본인인증 - 신용카드
+ * siteFn.apiOknameCredit({})
+ */
+SiteFunction.prototype.apiOknameCredit = function(paramsMap) {
+	var url = contextRoot + "/components/okname/credit.do";
+	webUtil.windowOpen(url, paramsMap, {scrollbars : 'yes', width: 430, height:630, resize : "yes"});
+};
+
+/**
+ * 지도보기 (고사장)
+ * siteFn.apiMap({examhallSeq : ""}) || siteFn.apiMap({examoprSeq : ""})
+ */
+SiteFunction.prototype.apiMap = function(paramsMap) {
+	var url;
+	if (paramsMap.examhallSeq) {
+		url = contextRoot + "/components/map/view.do";	
+		webUtil.windowOpen(url, paramsMap, {scrollbars : 'yes', width: 700, height:600, resize : "yes"});
+	} else {
+		url = contextRoot + "/components/map/list.do";	
+		webUtil.windowOpen(url, paramsMap, {scrollbars : 'yes', width: 900, height:600, resize : "yes"});
+	}
+}
+
+/**
+ * 본인인증 - 주민등록번호
+ * siteFn.apiOknameSSN({name: "이름", ssn: "주민등록번호"}, function() {}) // 940210-2111111
+ */
+SiteFunction.prototype.apiOknameSSN = function(paramsMap, success, error) {
+	var url = contextRoot + "/components/okname/namecheck.dox";
+	$.rest.url(url).post({
+		param : paramsMap,
+		success : function(data, status){
+			if(data.result == "success"){
+				success(data);
+			} else {
+				error(data);
+			}
+		}
+	});
+};
+
+/**
+ * 보수교육 - 동영상보기
+ */
+SiteFunction.prototype.reeduPlayer = function(paramsMap, callback) {
+	var url = contextRoot + "/components/videojs/player.do";	
+	webUtil.windowOpen(url, paramsMap, {scrollbars : 'no', resize : "no"}, callback);
+}
+
+/**
+ * 시험결과 확인
+ */
+SiteFunction.prototype.openCertResult = function(paramsMap) {
+	var url = contextRoot + "/mypage/accept/score.do";
+	webUtil.windowOpen(url, paramsMap, {scrollbars : 'yes', width: 550, height:630, resize : "yes"});
+};
+
+/**
+ * 마이페이지 > 시험결과 확인 > 회차별 공지사항 팝업
+ */
+SiteFunction.prototype.openExamoprNoticePop = function(paramsMap) {
+	var url = contextRoot + "/mypage/accept/examoprNoticePop.do";
+	webUtil.windowOpen(url, paramsMap, {scrollbars : 'yes', width: 700, height:800, resize : "yes"});
+};
+
+
+
+
+

@@ -1,0 +1,45 @@
+#RoundApp{
+  width: 350px;
+  height: 410px;
+  margin: 30px auto;
+  display: flex;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  flex-direction: column;
+  text-align: center;
+  padding-left: 35px;
+  align-items: baseline;
+  justify-content: space-around;
+}
+#RoundApp label input{
+  margin-left: 10px;
+  border-radius: 3px;
+  outline: none;
+}
+#RoundApp input[type="number"]{
+  padding: 6px 10px;
+  width: 50px;
+}
+#RoundApp input{
+  border: 1px solid #ddd;
+  padding: 5px 10px;
+}
+#RoundApp h1{
+  width: 90%;
+  border-bottom: 2px solid #ddd;
+}
+
+#RoundApp #go{
+  background-color: dodgerblue;
+  color: white;
+  padding: 7px 30px;
+  border-radius: 20px;
+  margin: 0 auto;
+  transform: translate(-20px,-5px);
+  font-size: 20px;
+  cursor: pointer;
+  transition: 0.35s;
+}
+#RoundApp #go:hover{
+  background-color: steelblue;
+}

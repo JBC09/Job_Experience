@@ -1,0 +1,474 @@
+var $joinApp = {};
+
+jQuery(function($){
+	'use strict';	
+	//메시지 수신 받는 eventListener 등록
+	//window.addEventListener( 'message', receiveMsgFromChild );
+	// 데이터 셋
+	var $scope = {
+		loading : false
+		, examopr : { info : {aplySeq : 0} }
+		, list : []
+		, phtchgInfo : {}
+	};
+	// 컨버터
+	var converter ={};
+	// 뷰
+	var view = {};
+	// 어플리케이션
+	var App = {
+		init : function(){
+			App.fnSearchList();
+			
+			this.cacheElements();
+			this.render();
+			return;
+		}
+		, cacheElements : function() {
+			//converter
+			converter.list = Handlebars.compile(webUtil.getHtml('#list-template'));
+			converter.exam = Handlebars.compile(webUtil.getHtml('#exam-template'));
+			converter.examWait = Handlebars.compile(webUtil.getHtml('#exam-wait-template'));
+			converter.examPrint = Handlebars.compile(webUtil.getHtml('#exam-print-template'));
+			converter.ssn = Handlebars.compile(webUtil.getHtml('#ssn-template'));
+			converter.phtchg = Handlebars.compile(webUtil.getHtml('#phtchg-template'));
+			
+			view.list = $("#list-area");
+			return;
+		}
+		, render : function(){
+			App.renderList();
+		}
+		, renderList : function(){
+			view.list.html( converter.list($scope) );
+			$(".io-fn-setter").bind("change", this.fnSetter);
+			$(".io-fn-openCertIssu").bind("click", this.fnExamIssu);
+			$(".io-fn-openCertPrint").bind("click", this.fnOpenCertPrint);
+			$(".io-fn-openCertResult").bind("click", this.fnOpenCertResult);
+			$(".io-fn-openPilgiPrint").bind("click", this.fnOpenPilgiPrint);
+			$('.io-fn-getScope').unbind('click').bind('click', function(){console.log($scope);});
+			$('.io-fn-pay').bind("click", this.fnPay);
+			$('.io-fn-add-file').bind("click", this.fnUploadFileOne);
+			$('.io-fn-phtchg-pop').bind("click", this.fnPhtchgPop);
+			$('.io-fn-phtchg-photo').bind("click", this.fnPhtchgUploadPhoto);
+			$('.io-fn-phtchg-req').bind("click", this.fnPhtchgReq);
+			
+			//추가 학교명 검색 2022.05.03 JKH
+			$('.io-fn-schul-api').bind("click", this.fnCallSchulApi);
+			
+			$(".io-fn-saveExcel").bind("click", this.fnSaveExcel);
+			
+			$(".io-fn-download-file").bind("click", this.fileDownload);
+		
+			return;
+		}
+		, renderExam : function() {
+			webUtil.fnLyloadHtml(converter.exam($scope), function(){}, {ly_w : 500, ly_h : 300, num : 1});
+			$('.io-fn-exam-issu').bind("click", this.fnExamIssu);
+		}
+		, renderExamWait : function() {
+			webUtil.fnLyloadHtml(converter.examWait($scope), function(){}, {ly_w : 500, ly_h : 300, num : 2});
+		}
+		, renderExamPrint : function() {
+			webUtil.fnLyloadHtml(converter.examPrint($scope), function(){}, {ly_w : 500, ly_h : 300, num : 3});
+			$('.io-fn-exam-print').bind("click", this.fnExamPrint);
+		}
+		, renderSSN : function() {
+			webUtil.fnLyloadHtml(converter.ssn($scope), function(){}, {ly_w : 500, ly_h : 300, num : 4});
+			$('.io-fn-ssn').bind("click", this.fnSendSSN);
+		}
+		//조회
+		, fnSearchList : function(){
+			var nparmap = {};
+			$.rest.url(contextRoot + '/mypage/accept/result.dox').post({
+				param : nparmap,
+				success : function(data, status){
+					$scope.list = data.list;
+					$scope.listCnt = data.list.length;
+					$scope.examopr.info = $scope.list[0];
+					App.renderList();
+				}
+			});
+		}
+		, fnPay : function(e) {
+			var paySeq = $(e.target).data().payseq;
+			if (paySeq != undefined && paySeq > 0)
+				webUtil.postCall(contextRoot+"/components/allatpay/approval.do", {paySeq:paySeq});
+		}		
+		, fnExamIssu : function() {
+			var url = "./exam/issu.dox";
+			var selectObj = $("input[name=idx]:checked");
+			if(selectObj.length != 1){
+				alert("시험을 선택하여 주십시오.");
+				return;
+			}
+			
+			$scope.examopr.info = $scope.list[selectObj.val()];
+			
+			//응시확인서 승인상태 예외처리
+			/*
+			 * 정책 변경 : 항상 출력 가능
+			var okynExam = $scope.examopr.info.okynExam; 
+			if(okynExam == "N"){
+				alert("응시확인서 발급상태가 [출력가능] 상태여야 출력할 수 있습니다.");
+				return;
+			}
+			*/
+			
+			var nparam = {};
+			_.assign(nparam, $scope.examopr.info)
+			nparam.deliveryZipcode = "";
+			nparam.deliveryAddr = "";
+			nparam.deliveryAddrdtl = "";
+			nparam.confirmdockind = "10";
+			
+			$.rest.url(url).post({
+				param : nparam,
+				success : function(data, status){
+					if(data.result == "success"){
+						//alert("신청이 완료되었습니다.");
+						// webUtil.fnLypop_remove(1);
+						//App.fnList();
+						App.fnExamPrint();
+					} else {
+						alert(data.message);
+					}
+				}
+			});
+		}	
+		, fnList : function() {
+			window.location.reload();
+		}
+		, fnExamPrint : function() {	
+			var selectObj = $("input[name=idx]:checked");
+			if(selectObj.length != 1){
+				alert("시험을 선택하여 주십시오.");
+				return;
+			}
+			$scope.examopr.info = $scope.list[selectObj.val()];
+			var examinfo = $scope.examopr.info;
+			webUtil.fnLypop_remove(3);
+			siteFn.openCertIssu({aplySeq : examinfo.aplySeq});
+		}
+		, fnOpenPilgiPrint: function(){
+			var selectObj = $("input[name=idx]:checked");
+			if(selectObj.length != 1){
+				alert("시험을 선택하여 주십시오.");
+				return;
+			}
+			
+			$scope.examopr.info = $scope.list[selectObj.val()];
+			
+			//필기합격확인서는 빅분기와 ADP만 출력하도록 예외처리 추가
+			var class1 = $scope.examopr.info.class1;
+			if(class1 != "7" && class1 != "5"){
+				alert("필기합격확인서는 ADP와 빅데이터분석기사 필기 종목만 발급할 수 있습니다.");
+				return;
+			}
+			
+			//필기합격확인서는 필기 종목만 출력할 수 있도록 예외처리 추가
+			var pgsggb = $scope.examopr.info.pgsggb;
+			if(pgsggb == "SG"){
+				alert("필기합격확인서는 ADP와 빅데이터분석기사 필기 종목만 발급할 수 있습니다.");
+				return;
+			}
+			
+			//필기 불합격자 예외처리 추가
+			var passexptyn = $scope.examopr.info.passexptyn;
+			if(passexptyn == undefined){
+				alert("불합격한 경우 필기합격확인서를 출력할 수 없습니다.");
+				return;
+			}
+			
+			//성적발표일 이후에만 발급 가능
+			var scoreviewyn = $scope.examopr.info.scoreviewyn;
+			if(scoreviewyn != "Y"){
+				alert("필기합격확인서 발급일시가 아닙니다.");
+				return;
+			}
+			
+			//필기합격서 오즈리포트 서버 설치후 재작업 예정(2023-01-02)
+			//alert("필기합격확인서 출력 기능 추가 예정입니다.");
+			//return;
+			
+			var examinfo = $scope.examopr.info;
+			
+			webUtil.fnLypop_remove(3);
+			siteFn.openPgPass({aplySeq : examinfo.aplySeq , class1 : examinfo.class1});
+			
+		}
+		, fnSetter : function(e){
+			var idx = $(e.target).val();
+			$scope.examopr.info = $scope.list[idx];
+		}
+		, fnOpenCertIssu : function(){
+			var selectObj = $("input[name=idx]:checked");
+			if(selectObj.length != 1){
+				alert("시험을 선택하여 주십시오.");
+				return;
+			}
+			$scope.examopr.info = $scope.list[selectObj.val()];
+			var examinfo = $scope.examopr.info;
+			
+			if(examinfo.issuviewyn == "N"){
+				alert("응시정보가 아직 확인 되지 않았습니다.");
+				return;
+			}
+			
+			if (examinfo.issuSeqExam) {
+				// 응시 확인서 신청 함
+				if (examinfo.okynExam == 'Y') {
+					App.renderExamPrint();
+				} else {
+					App.renderExamWait();
+				}
+			} else {
+				App.renderExam();
+			}
+		}
+		, fnOpenCertPrint : function(aplySeq){
+			var selectObj = $("input[name=idx]:checked");
+			if(selectObj.length != 1){
+				alert("시험을 선택하여 주십시오.");
+				return;
+			}
+			$scope.examopr.info = $scope.list[selectObj.val()];
+			var examinfo = $scope.examopr.info;
+			
+			if (examinfo.lastpassyn == 'N') {
+				alert("해당 시험에 합격하지 못해 자격증을 발급할 수 없습니다.");
+				return;
+			} else if (examinfo.lastpassyn == 'Y') {
+				if(examinfo.scoreviewyn == 'N'){
+					alert("해당 시험의 합격/불합격 미결정 상태입니다.");
+					return;
+				}else{
+					// 주민등록번호가 없을 경우 받아야함
+					if (examinfo.ssnyn == 'N' && examinfo.certkind == '10' && false) {
+						// certkind == 05 (민간자격이므로 주민등록번호를 받지 않음)
+						// certkind == 15 (이미 접수 단계에서 주민등록번호를 받음)
+						App.renderSSN();
+					} else {
+						App.fnPrintCert(examinfo);
+					}
+				}
+			} else if (examinfo.sgDivyn == 'Y') {
+				alert("실기가 있는 시험은 자격증을 출력할 수 없습니다.")
+				return;
+			} else if (examinfo.passexptyn == 'Y'){
+				if(examinfo.scoreviewyn == 'N'){
+					alert("해당 시험의 합격/불합격 미결정 상태입니다.");
+					return;
+				}else{
+					alert("합격 예정 상태입니다.")
+					return;
+				}
+			} else {
+				alert("해당 시험의 합격/불합격 미결정 상태입니다.");
+				return;
+			}
+		}
+		, fnPrintCert : function(examinfo) {
+			siteFn.openCertScore({aplySeq: examinfo.aplySeq});
+		}
+		, fnSendSSN : function() {
+			var srchObject = $("form[name=ssnForm]").serializeObject();
+			siteFn.apiOknameSSN(srchObject, function(data) {
+				// success				
+				data.examoprSeq = $scope.examopr.info.examoprSeq;
+				$.rest.url("./edit.dox").post({
+					param : data,
+					success : function(data, status){
+						if(data.result == "success"){
+							$scope.examopr.info.ssnyn = 'Y';
+							App.fnPrintCert($scope.examopr.info);
+							webUtil.fnLypop_remove(4);
+						} else {
+							alert(data.message);
+						}
+					}
+				});
+			}, function(data) {
+				// fail
+				alert(data.message);
+			});
+		}
+		, fnOpenCertResult : function(aplySeq){
+			var selectObj = $("input[name=idx]:checked");
+			if(selectObj.length != 1){
+				alert("시험을 선택하여 주십시오.");
+				return;
+			}
+			$scope.examopr.info = $scope.list[selectObj.val()];
+			var examinfo = $scope.examopr.info;
+			
+			if(examinfo.scoreviewyn == "Y"){
+				siteFn.openCertResult({aplySeq: examinfo.aplySeq});
+			}else{
+				alert("결과 발표 기간이 아닙니다.");
+			}
+		}
+		, fnGetScope : function(){
+			console.debug($scope);
+		}
+		, fnUploadFileOne : function(e) {
+			var index = $(e.target).data().idx;
+			var info = $scope.list[index];
+			
+			if (info.dicevidFilepath) {
+				if (!confirm("이미 파일이 있습니다. 다시 업로드 하시겠습니까?"))
+					return;
+			}
+			
+			$scope.examopr.info = info;
+			
+			var callBackFn = "fnAfterUploadDone";
+			
+			if(info.class1 == "7") {
+				callBackFn = "fnAfterDicevidUploadDone";
+				var paramsMap = {callBackFn : callBackFn, info : info, curexamopr_seq : info.examoprSeq};
+				var url = contextRoot + "/mypage/accept/upload.do";
+				$ctrl.setCallBack(callBackFn, App[callBackFn]);
+				webUtil.windowOpen(url, paramsMap, {width : 700, height : 550, resize : "yes"});
+				
+			} else {
+				var paramsMap = {subKind : "evid", callBackFn : callBackFn};
+				var url = contextRoot + "/components/file/upload.do";
+				$ctrl.setCallBack(callBackFn, App[callBackFn]);
+				webUtil.windowOpen(url, paramsMap, {width : 600, height : 260});
+			}
+			
+		}
+		, fnAfterUploadDone : function(fileObj) {
+			var excelFile = fileObj[0].filePath + "/" + fileObj[0].fileName;
+			$scope.examopr.info.dicevidFilepath = excelFile;
+			$.rest.url("./upload.dox").post({
+				param : $scope.examopr.info,
+				success : function(data, status){
+					if(data.result == "success"){
+						alert("파일 업로드가 완료되었습니다.");
+						App.render();
+					} else {
+						alert(data.message);
+					}
+				}
+			});
+		}
+		, fnAfterDicevidUploadDone : function(fileObj) {
+			window.location.reload();
+		}
+		, pccRefund: function() {
+			window.location.reload();
+		}
+		, fnPhtchgPop : function(e) {
+			var selectObj = $("input[name=idx]:checked");
+			if(selectObj.length != 1){
+				alert("시험을 선택하여 주십시오.");
+				return;
+			}
+			console.log($scope.examopr.info);
+			if($scope.examopr.info.lastpassyn == "Y" && $scope.examopr.info.validScoreYn == "Y"){
+				$scope.phtchgInfo = $scope.list[selectObj.val()];
+				webUtil.fnLyloadHtml(converter.phtchg($scope), {}, {num : 2, ly_w : 680});
+				App.render();
+			}else{
+				alert("자격증 출력이 가능한 시험만 사진변경 요청이 가능합니다.");
+			}
+		}
+		, fnPhtchgReq : function(e){
+			var params = $("form[name=phtchgFrm]").serializeObject();
+			if($scope.phtchgInfo.phtchgReqphtfilepath == undefined || $scope.phtchgInfo.phtchgReqphtfilepath == ""){
+				alert("변경 후 사진을 등록해주세요.");
+				App.fnPhtchgUploadPhoto();
+			}else if(params.phtchgReqreas == undefined || params.phtchgReqreas == ""){
+				alert("요청사유를 입력해주세요.");
+				$("#phtchgReqreas").focus();
+			}else{
+				params.phtchgReqphtfilepath = $scope.phtchgInfo.phtchgReqphtfilepath;
+				$.rest.url(contextRoot + '/examopr/cert/succ/phtchg/req.dox').post({
+					param : params,
+					success : function(data, status){
+						alert(data.message);
+						if(data.result == "success"){
+							App.fnList();	
+						}
+					},
+					error: function (jqXHR, status) {
+						webUtil.fnLypop_remove(2);
+					} 
+				});
+			}
+		}
+		, fnPhtchgUploadPhoto : function(e) {
+			if ($scope.phtchgInfo.phtchgReqphtfilepath) {
+				if (!confirm("이미 파일이 있습니다. 다시 업로드 하시겠습니까?")){
+					return;
+				}
+			}
+			var callBackFn = "fnPhtchgUploadPhotoDone";
+			var paramsMap = {fileType : "image", subKind : "member", callBackFn : callBackFn};
+			var url = contextRoot + "/components/file/upload.do";
+			$ctrl.setCallBack(callBackFn, App[callBackFn]);
+			webUtil.windowOpen(url, paramsMap, {width : 430, height : 170});
+		}
+		, fnPhtchgUploadPhotoDone : function(fileObj) {
+			var excelFile = fileObj[0].filePath + "/" + fileObj[0].fileName;
+			$scope.phtchgInfo.phtchgReqphtfilepath = excelFile;
+			$("#userImage").attr("src", dataRoot + excelFile);
+		}
+		//추가 학교명 검색 2022.05.03 JKH
+		, fnCallSchulApi : function(e) {
+			var index = $(e.target).data().idx;
+			var info = $scope.list[index];
+				
+			$scope.examopr.info = info;
+			
+			var callBackFn = "fnAfterSchulApi";
+			if(info.class1 == "7") {
+				var paramsMap = {callBackFn : callBackFn, info : info, curexamopr_seq : info.examoprSeq};
+				var url = contextRoot + "/mypage/accept/popPrintApiReq.do";
+				$ctrl.setCallBack(callBackFn, App[callBackFn]);
+				webUtil.windowOpen(url, paramsMap, {width : 600, height : 800, resize : "yes"});
+			} 
+			
+		}
+		, fnSaveExcel : function(e){
+			var data = $(e.target).data();
+			if(data != undefined && data.f != undefined){
+				var nparmap = $scope.examopr.info;
+				nparmap.itemPerPage = 100;
+				
+				var paramsMap = { p : JSON.stringify(nparmap), f : data.f};
+				siteFn.saveExcel(paramsMap);
+			}else{
+				alert("잘못된 호출입니다.");
+			}
+		}
+		, fileDownload: function() {
+	
+			var file = $(this).data().file;
+			if(file == undefined || file == "") {
+				alert("파일정보가 잘못되었습니다. 관리자에게 문의바랍니다.");
+				return;
+			}
+		
+			var filePath = file.substring(1, file.lastIndexOf("/"));
+			var fileName = file.substring(file.lastIndexOf("/")+1);
+			var paramsMap = {filePath : filePath, orgnFileName : "", fileName : fileName};
+			
+			webUtil.postCall(contextRoot + "/components/file/download.do", paramsMap, "_fileDownFrm");
+		}
+	};
+	App.init();
+	
+	$joinApp = App;
+});
+
+
+
+// 자식으로부터 메시지 수신
+/*
+function receiveMsgFromChild( e ) {
+	location.reload();
+}
+*/
